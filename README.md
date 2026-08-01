@@ -1,32 +1,45 @@
 # I find
 
-`I find` is a lightweight native Android search launcher built with Kotlin and XML Views.
+`I find` 是一款使用 Kotlin 和 XML Views 编写的轻量级原生安卓搜索启动器。
 
-## Features
+## 主要功能
 
-- Configurable search targets with primary and fallback links
-- Add, edit, hide, delete, and drag to reorder targets
-- Built-in, installed-app, gallery, generated, and cached remote icons
-- Search history grouped by day
-- Optional Shizuku-assisted defrost for disabled or suspended apps
-- Local-only settings and history storage
+- 配置搜索项的主链接和备用链接
+- 新增、编辑、隐藏、删除及拖拽排序搜索项
+- 支持内置图标、已安装应用图标、相册图片、首字图标和网络图片
+- 网络图片首次加载成功后缓存到本地
+- 搜索历史按日期分组，可折叠、单独删除或按天清空
+- 可选用 Shizuku 自动恢复被禁用、暂停或冻结的应用
+- 搜索项、设置和历史记录均保存在设备本地
 
-## Project Layout
+## 项目目录
 
-- `native-android/`: current Android Studio project
-- `build-native.bat`: build the signed local APK
-- `install-native.bat`: install the existing APK on a connected device
-- `build-local.ps1`: local Windows build implementation
+- `native-android/`：当前 Android Studio 原生项目
+- `build-native.bat`：在 Windows 本地构建签名 APK
+- `install-native.bat`：把现有 APK 安装到已连接的安卓设备
+- `build-local.ps1`：Windows 本地构建脚本
 
-Open `native-android/` in Android Studio when developing the app.
+进行安卓开发时，请使用 Android Studio 打开 `native-android/` 目录。
 
-## Local Build
+## 本地构建
 
-The local build scripts expect the project-local JDK/Android SDK under `.toolchains/`, signing settings in `credentials.json`, and the release keystore at `android/keystores/release.keystore`. These local and sensitive files are intentionally excluded from Git.
+本地构建脚本需要以下文件和工具：
 
-The generated APK is written to `builds/i-find-native-arm64-v8a-release.apk`.
+- 项目本地 JDK 和 Android SDK：`.toolchains/`
+- 安卓签名配置：`credentials.json`
+- Release 签名文件：`android/keystores/release.keystore`
 
-## Branches
+这些本地工具、凭据和签名文件均已被 Git 忽略，不会上传到仓库。
 
-- `main`: current native Kotlin version
-- `legacy`: archived Expo and single-page web versions
+双击 `build-native.bat` 可以构建 APK。生成的安装包位于：
+
+```text
+builds/i-find-native-arm64-v8a-release.apk
+```
+
+手机开启 USB 调试并连接电脑后，双击 `install-native.bat` 可以直接安装或覆盖更新应用。
+
+## 分支说明
+
+- `main`：当前 Kotlin 原生安卓版本
+- `legacy`：旧 Expo 和单文件 H5 版本归档

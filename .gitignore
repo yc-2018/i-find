@@ -32,6 +32,10 @@ yarn-error.*
 .DS_Store
 *.pem
 
+# IDE
+.idea/
+*.iml
+
 # TypeScript
 *.tsbuildinfo
 
