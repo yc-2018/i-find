@@ -198,10 +198,13 @@
                     android:id="@+id/remoteIconInput"
                     style="@style/EditorInput"
                     android:background="@drawable/bg_surface_strong"
+                    android:gravity="top|start"
                     android:hint="@string/remote_icon_url_hint"
                     android:importantForAutofill="no"
-                    android:inputType="textUri"
-                    android:maxLines="3" />
+                    android:inputType="textUri|textMultiLine"
+                    android:maxLines="6"
+                    android:minLines="3"
+                    android:scrollHorizontally="false" />
 
                 <TextView
                     android:layout_width="match_parent"
@@ -240,10 +243,13 @@
         <EditText
             android:id="@+id/primaryInput"
             style="@style/EditorInput"
+            android:gravity="top|start"
             android:hint="@string/primary_template_hint"
             android:importantForAutofill="no"
-            android:inputType="textUri"
-            android:maxLines="3" />
+            android:inputType="textUri|textMultiLine"
+            android:maxLines="6"
+            android:minLines="3"
+            android:scrollHorizontally="false" />
 
         <TextView
             style="@style/EditorLabel"
@@ -252,10 +258,13 @@
         <EditText
             android:id="@+id/fallbackInput"
             style="@style/EditorInput"
+            android:gravity="top|start"
             android:hint="@string/fallback_template_hint"
             android:importantForAutofill="no"
-            android:inputType="textUri"
-            android:maxLines="3" />
+            android:inputType="textUri|textMultiLine"
+            android:maxLines="6"
+            android:minLines="3"
+            android:scrollHorizontally="false" />
 
         <TextView
             android:layout_width="match_parent"
