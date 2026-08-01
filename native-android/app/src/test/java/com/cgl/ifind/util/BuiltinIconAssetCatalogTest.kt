@@ -57,6 +57,15 @@ class BuiltinIconAssetCatalogTest {
   }
 
   @Test
+  fun legacyAliasKeysAreNotResolved() {
+    val assets = BuiltinIconAssetCatalog.build(listOf("01_douyin.png", "08_web.svg"))
+
+    assertNull(BuiltinIconAssetCatalog.resolveFileName(assets, "asset:douyin"))
+    assertNull(BuiltinIconAssetCatalog.resolveFileName(assets, "builtin:web"))
+    assertNull(BuiltinIconAssetCatalog.resolveFileName(assets, "mdi:magnify"))
+  }
+
+  @Test
   fun duplicateStableKeysUseTheEarlierSortedFile() {
     val assets = BuiltinIconAssetCatalog.build(
       listOf("20_same.png", "10_same.png")

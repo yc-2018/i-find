@@ -17,27 +17,6 @@ import java.io.File
 object IconLoader {
   const val DEFAULT_BUILTIN_ICON_VALUE = "douyin.png"
 
-  private val legacyBuiltinAliases = mapOf(
-    "asset:douyin" to "douyin.png",
-    "asset:bilibili" to "bilibili.png",
-    "asset:meituan" to "meituan.png",
-    "asset:xhs" to "xhs.png",
-    "asset:jd" to "jd.png",
-    "asset:taobao" to "taobao.png",
-    "asset:pdd" to "pdd.png",
-    "builtin:search" to "search.svg",
-    "builtin:shopping" to "shopping.svg",
-    "builtin:play" to "play.svg",
-    "builtin:note" to "note.svg",
-    "builtin:web" to "web.svg",
-    "mdi:magnify" to "search.svg",
-    "mdi:shopping-outline" to "shopping.svg",
-    "mdi:food-fork-drink" to "search.svg",
-    "mdi:play-circle-outline" to "play.svg",
-    "mdi:note-text-outline" to "note.svg",
-    "mdi:book-open-page-variant-outline" to "note.svg",
-    "mdi:earth" to "web.svg"
-  )
   private val builtinAssetCache = object : LruCache<String, Bitmap>(BUILTIN_CACHE_BYTES) {
     override fun sizeOf(key: String, value: Bitmap): Int = value.byteCount
   }
@@ -100,11 +79,10 @@ object IconLoader {
 
   fun loadBuiltinInto(imageView: ImageView, iconValue: String) {
     imageView.scaleType = ImageView.ScaleType.CENTER_INSIDE
-    val compatibleIconValue = legacyBuiltinAliases[iconValue] ?: iconValue
     val assetFileName = BuiltinIconAssetCatalog.resolveFileName(
       getBuiltinAssets(imageView.context),
-      compatibleIconValue
-    ) ?: compatibleIconValue
+      iconValue
+    ) ?: iconValue
     val bitmap = loadBuiltinAssetBitmap(imageView.context, assetFileName)
     if (bitmap != null) {
       imageView.setImageBitmap(bitmap)

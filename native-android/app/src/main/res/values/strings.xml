@@ -55,6 +55,11 @@
     <string name="status_permission_required_detail">Shizuku 服务已运行，请授权 I find。</string>
     <string name="status_unavailable_detail">当前设备无法使用 Shizuku 解冻服务。</string>
     <string name="auto_defrost_not_ready">请先启动 Shizuku 并完成授权</string>
+    <string name="about_app">关于 I find</string>
+    <string name="check_updates_summary">前往 GitHub Release 查看并下载最新版本。</string>
+    <string name="app_version_format">当前版本 %1$s</string>
+    <string name="app_version_placeholder">当前版本</string>
+    <string name="check_updates">检查更新</string>
     <string name="target_list">搜索项列表</string>
     <string name="target_visible">首页可见</string>
     <string name="target_hidden">已隐藏</string>

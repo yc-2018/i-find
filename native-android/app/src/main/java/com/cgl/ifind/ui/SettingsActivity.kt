@@ -1,6 +1,7 @@
 package com.cgl.ifind.ui
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -156,6 +157,14 @@ class SettingsActivity : AppCompatActivity(), SettingsAdapterListener {
   override fun onRefreshStatus() {
     currentStatus = shizukuBridge.refresh()
     updateHeader(currentStatus)
+  }
+
+  override fun onCheckUpdates() {
+    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_RELEASES_URL)).apply {
+      addCategory(Intent.CATEGORY_BROWSABLE)
+    }
+    runCatching { startActivity(intent) }
+      .onFailure { Toast.makeText(this, R.string.open_failed, Toast.LENGTH_SHORT).show() }
   }
 
   override fun onEdit(target: SearchTarget) {
@@ -344,5 +353,9 @@ class SettingsActivity : AppCompatActivity(), SettingsAdapterListener {
     if (!dragChanged) return
     store.saveTargets(settingsAdapter.snapshotTargets())
     dragChanged = false
+  }
+
+  companion object {
+    private const val GITHUB_RELEASES_URL = "https://github.com/yc-2018/i-find/releases/latest"
   }
 }

@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
+import com.cgl.ifind.BuildConfig
 import com.cgl.ifind.R
 import com.cgl.ifind.data.AppStore
 import com.cgl.ifind.data.SearchTarget
@@ -43,6 +44,7 @@ interface SettingsAdapterListener {
   fun onAutoDefrostChanged(enabled: Boolean)
   fun onShizukuAction()
   fun onRefreshStatus()
+  fun onCheckUpdates()
   fun onEdit(target: SearchTarget)
   fun onDelete(target: SearchTarget)
   fun onVisibilityChanged(target: SearchTarget, visible: Boolean)
@@ -170,6 +172,11 @@ class SettingsAdapter(
     fun bind(state: SettingsHeaderState) {
       binding.refreshStatusButton.setOnClickListener { listener.onRefreshStatus() }
       binding.shizukuActionButton.setOnClickListener { listener.onShizukuAction() }
+      binding.checkUpdatesButton.setOnClickListener { listener.onCheckUpdates() }
+      binding.appVersionLabel.text = binding.root.context.getString(
+        R.string.app_version_format,
+        BuildConfig.VERSION_NAME
+      )
 
       binding.historySwitch.setOnCheckedChangeListener(null)
       binding.historySwitch.isChecked = state.historyEnabled
