@@ -6,7 +6,7 @@
 
 - 应用名称：`I find`
 - Android 包名：`com.cgl.ifind`
-- 当前版本：`2.3.0`（`versionCode = 5`）
+- 当前版本：`2.3.1`（`versionCode = 6`）
 - 当前实现：Kotlin + XML Views + ViewBinding
 - 当前主项目：`native-android/`
 - 最低 Android：API 26

@@ -3,10 +3,12 @@ package com.cgl.ifind.ui
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doAfterTextChanged
 import com.cgl.ifind.R
 import com.cgl.ifind.data.AppStore
@@ -72,7 +74,13 @@ class TargetEditorActivity : AppCompatActivity() {
     super.onCreate(savedInstanceState)
     binding = ActivityTargetEditorBinding.inflate(layoutInflater)
     setContentView(binding.root)
-    applySystemBarInsets(binding.root)
+    applySystemBarInsets(binding.root, includeIme = true) { windowInsets ->
+      if (windowInsets.isVisible(WindowInsetsCompat.Type.ime())) {
+        binding.root.post {
+          binding.root.findFocus()?.let { scrollFieldAboveKeyboard(it, smooth = false) }
+        }
+      }
+    }
 
     store = AppStore(applicationContext)
     shizukuBridge = ShizukuBridge(applicationContext)
@@ -165,6 +173,53 @@ class TargetEditorActivity : AppCompatActivity() {
     }
     binding.iconPreviewButton.setOnClickListener { handleIconPreviewClick() }
     binding.saveButton.setOnClickListener { saveTarget() }
+
+    listOf(
+      binding.nameInput,
+      binding.remoteIconInput,
+      binding.packageInput,
+      binding.primaryInput,
+      binding.fallbackInput
+    ).forEach { input ->
+      input.setOnFocusChangeListener { view, hasFocus ->
+        if (hasFocus) requestFieldAboveKeyboard(view)
+      }
+    }
+  }
+
+  private fun requestFieldAboveKeyboard(view: View) {
+    view.postDelayed({
+      scrollFieldAboveKeyboard(view, smooth = true)
+    }, KEYBOARD_SCROLL_DELAY_MS)
+  }
+
+  private fun scrollFieldAboveKeyboard(view: View, smooth: Boolean) {
+    if (!view.isFocused) return
+
+    val scrollLocation = IntArray(2)
+    val fieldLocation = IntArray(2)
+    binding.editorScroll.getLocationInWindow(scrollLocation)
+    view.getLocationInWindow(fieldLocation)
+
+    val margin = (16 * resources.displayMetrics.density).toInt()
+    val visibleTop = binding.editorScroll.paddingTop + margin
+    val visibleBottom = binding.editorScroll.height - binding.editorScroll.paddingBottom - margin
+    if (visibleBottom <= visibleTop) return
+
+    val fieldTop = fieldLocation[1] - scrollLocation[1]
+    val fieldBottom = fieldTop + view.height
+    val scrollDelta = when {
+      fieldBottom > visibleBottom -> fieldBottom - visibleBottom
+      fieldTop < visibleTop -> fieldTop - visibleTop
+      else -> 0
+    }
+    if (scrollDelta == 0) return
+
+    if (smooth) {
+      binding.editorScroll.smoothScrollBy(0, scrollDelta)
+    } else {
+      binding.editorScroll.scrollBy(0, scrollDelta)
+    }
   }
 
   private fun handleIconPreviewClick() {
@@ -332,6 +387,7 @@ class TargetEditorActivity : AppCompatActivity() {
   companion object {
     const val EXTRA_TARGET_ID = "target_id"
     private const val KEYWORD_PLACEHOLDER = "{keyword}"
+    private const val KEYBOARD_SCROLL_DELAY_MS = 240L
     private val SUPPORTED_ICON_MODES = setOf(
       IconModes.BUILTIN,
       IconModes.INSTALLED_APP,

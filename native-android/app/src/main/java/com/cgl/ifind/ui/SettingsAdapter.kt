@@ -4,6 +4,7 @@ import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.cgl.ifind.R
 import com.cgl.ifind.data.AppStore
@@ -227,11 +228,12 @@ class SettingsAdapter(
       val visibilityLabel = binding.root.context.getString(
         if (target.hidden) R.string.target_hidden else R.string.target_visible
       )
-      binding.targetStatus.text = if (headerState.packageNamesVisible) {
-        target.androidPackageName?.let { "$visibilityLabel · $it" } ?: visibilityLabel
-      } else {
-        visibilityLabel
+      val packageName = target.androidPackageName?.takeIf {
+        headerState.packageNamesVisible && it.isNotBlank()
       }
+      binding.targetVisibility.text = visibilityLabel
+      binding.targetStatus.text = packageName.orEmpty()
+      binding.targetStatus.isVisible = packageName != null
       IconLoader.loadInto(binding.targetIcon, target)
 
       binding.visibleSwitch.setOnCheckedChangeListener(null)

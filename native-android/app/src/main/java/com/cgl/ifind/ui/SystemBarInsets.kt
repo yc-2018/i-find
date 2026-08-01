@@ -6,7 +6,11 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 
-fun AppCompatActivity.applySystemBarInsets(root: View) {
+fun AppCompatActivity.applySystemBarInsets(
+  root: View,
+  includeIme: Boolean = false,
+  onInsetsChanged: ((WindowInsetsCompat) -> Unit)? = null
+) {
   WindowCompat.setDecorFitsSystemWindows(window, false)
 
   val initialLeft = root.paddingLeft
@@ -18,12 +22,18 @@ fun AppCompatActivity.applySystemBarInsets(root: View) {
     val safeInsets = windowInsets.getInsets(
       WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
     )
+    val bottomInset = if (includeIme) {
+      maxOf(safeInsets.bottom, windowInsets.getInsets(WindowInsetsCompat.Type.ime()).bottom)
+    } else {
+      safeInsets.bottom
+    }
     view.setPadding(
       initialLeft + safeInsets.left,
       initialTop + safeInsets.top,
       initialRight + safeInsets.right,
-      initialBottom + safeInsets.bottom
+      initialBottom + bottomInset
     )
+    onInsetsChanged?.invoke(windowInsets)
     windowInsets
   }
 
