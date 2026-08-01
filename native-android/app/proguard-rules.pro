@@ -1,0 +1,3 @@
+-keep class rikka.shizuku.** { *; }
+-keep class com.cgl.ifind.shizuku.** { *; }
+-keep interface com.cgl.ifind.shizuku.** { *; }
