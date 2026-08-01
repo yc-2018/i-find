@@ -7,6 +7,7 @@
     <color name="surface">#FFFAF1</color>
     <color name="surface_strong">#F8ECDB</color>
     <color name="subtle_text">#75614D</color>
+    <color name="search_target_label">#91877B</color>
     <color name="text_primary">#2F2418</color>
     <color name="muted">#B4A690</color>
     <color name="hidden">#C8B9A4</color>

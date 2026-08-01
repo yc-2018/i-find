@@ -58,6 +58,7 @@ class TargetGridAdapter(
   ) : RecyclerView.ViewHolder(binding.root) {
     fun bind(target: SearchTarget) {
       binding.targetName.text = target.name
+      binding.root.labelsVisible = showLabels
       binding.targetName.isVisible = showLabels
       IconLoader.loadInto(binding.targetIcon, target)
       binding.root.setOnClickListener { onTargetClick(target) }

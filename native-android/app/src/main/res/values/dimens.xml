@@ -2,4 +2,5 @@
 <resources>
     <dimen name="screen_padding">16dp</dimen>
     <dimen name="card_radius">20dp</dimen>
+    <dimen name="search_target_label_extra_height">18dp</dimen>
 </resources>
