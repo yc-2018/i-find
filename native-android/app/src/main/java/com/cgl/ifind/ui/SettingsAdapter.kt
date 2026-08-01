@@ -20,6 +20,7 @@ data class SettingsHeaderState(
   val statusLabel: String = "",
   val statusDetail: String = "",
   val statusReady: Boolean = false,
+  val packageNamesVisible: Boolean = false,
   val actionLabel: String = "",
   val actionEnabled: Boolean = false
 )
@@ -56,8 +57,13 @@ class SettingsAdapter(
   }
 
   fun updateHeader(nextState: SettingsHeaderState) {
+    val packageVisibilityChanged =
+      headerState.packageNamesVisible != nextState.packageNamesVisible
     headerState = nextState
     notifyItemChanged(0)
+    if (packageVisibilityChanged && targets.isNotEmpty()) {
+      notifyItemRangeChanged(1, targets.size)
+    }
   }
 
   fun isTargetPosition(adapterPosition: Int): Boolean {
@@ -171,8 +177,11 @@ class SettingsAdapter(
       val visibilityLabel = binding.root.context.getString(
         if (target.hidden) R.string.target_hidden else R.string.target_visible
       )
-      binding.targetStatus.text = target.androidPackageName?.let { "$visibilityLabel · $it" }
-        ?: visibilityLabel
+      binding.targetStatus.text = if (headerState.packageNamesVisible) {
+        target.androidPackageName?.let { "$visibilityLabel · $it" } ?: visibilityLabel
+      } else {
+        visibilityLabel
+      }
       IconLoader.loadInto(binding.targetIcon, target)
 
       binding.visibleSwitch.setOnCheckedChangeListener(null)

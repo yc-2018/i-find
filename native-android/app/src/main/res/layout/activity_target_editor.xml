@@ -216,25 +216,33 @@
             </LinearLayout>
         </LinearLayout>
 
-        <TextView
-            style="@style/EditorLabel"
-            android:text="@string/android_package" />
-
-        <TextView
+        <LinearLayout
+            android:id="@+id/packageSection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="7dp"
-            android:text="@string/android_package_summary"
-            android:textColor="@color/subtle_text"
-            android:textSize="12sp" />
+            android:orientation="vertical"
+            android:visibility="gone">
 
-        <EditText
-            android:id="@+id/packageInput"
-            style="@style/EditorInput"
-            android:hint="@string/android_package_hint"
-            android:importantForAutofill="no"
-            android:inputType="textNoSuggestions"
-            android:maxLines="1" />
+            <TextView
+                style="@style/EditorLabel"
+                android:text="@string/android_package" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="7dp"
+                android:text="@string/android_package_summary"
+                android:textColor="@color/subtle_text"
+                android:textSize="12sp" />
+
+            <EditText
+                android:id="@+id/packageInput"
+                style="@style/EditorInput"
+                android:hint="@string/android_package_hint"
+                android:importantForAutofill="no"
+                android:inputType="textNoSuggestions"
+                android:maxLines="1" />
+        </LinearLayout>
 
         <TextView
             style="@style/EditorLabel"

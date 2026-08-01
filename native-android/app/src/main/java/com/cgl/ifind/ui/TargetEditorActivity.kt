@@ -14,6 +14,7 @@ import com.cgl.ifind.data.DefaultTargets
 import com.cgl.ifind.data.IconModes
 import com.cgl.ifind.data.SearchTarget
 import com.cgl.ifind.databinding.ActivityTargetEditorBinding
+import com.cgl.ifind.shizuku.ShizukuBridge
 import com.cgl.ifind.util.IconFileStore
 import com.cgl.ifind.util.IconLoader
 import com.cgl.ifind.util.RemoteIconCache
@@ -23,6 +24,7 @@ import java.util.UUID
 class TargetEditorActivity : AppCompatActivity() {
   private lateinit var binding: ActivityTargetEditorBinding
   private lateinit var store: AppStore
+  private lateinit var shizukuBridge: ShizukuBridge
   private var existingTarget: SearchTarget? = null
   private var selectedIconMode = IconModes.GENERATED
   private var builtinIconValue = DefaultTargets.builtinIconChoices.first().key
@@ -74,6 +76,7 @@ class TargetEditorActivity : AppCompatActivity() {
     applySystemBarInsets(binding.root)
 
     store = AppStore(applicationContext)
+    shizukuBridge = ShizukuBridge(applicationContext)
     existingTarget = intent.getStringExtra(EXTRA_TARGET_ID)?.let(store::getTarget)
 
     populateForm()
@@ -81,8 +84,21 @@ class TargetEditorActivity : AppCompatActivity() {
     updateIconModeUi()
   }
 
+  override fun onStart() {
+    super.onStart()
+    shizukuBridge.onStart { status ->
+      binding.packageSection.isVisible = status.serviceRunning
+    }
+  }
+
+  override fun onStop() {
+    shizukuBridge.onStop()
+    super.onStop()
+  }
+
   override fun onDestroy() {
     if (!saved) discardUnsavedGallery()
+    shizukuBridge.close()
     super.onDestroy()
   }
 

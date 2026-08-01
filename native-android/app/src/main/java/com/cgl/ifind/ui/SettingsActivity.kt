@@ -224,6 +224,7 @@ class SettingsActivity : AppCompatActivity(), SettingsAdapterListener {
         statusLabel = statusLabel,
         statusDetail = statusDetail,
         statusReady = state == ShizukuState.READY,
+        packageNamesVisible = status?.serviceRunning == true,
         actionLabel = actionLabel,
         actionEnabled = actionEnabled
       )
