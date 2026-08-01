@@ -13,7 +13,7 @@
 - 编译及目标 Android：API 35
 - Java/Kotlin JVM：17
 - 发布产物：仅配置 `arm64-v8a` 的签名 APK
-- 构建方式：Windows 本地构建，不使用 EAS 或其他云打包
+- 构建方式：Windows 本地构建或 GitHub Actions 自动构建，不使用 EAS
 
 `main` 只保存当前 Kotlin 原生版本。旧 Expo 和单文件 H5 版本位于 `legacy` 分支，除非用户明确要求，否则不要将 `legacy` 合并回 `main`，也不要在 `main` 重新引入 Expo、React Native、Node 或网页运行入口。
 
@@ -144,6 +144,19 @@ builds/i-find-native-arm64-v8a-release.apk
 
 新增代码至少应通过 Kotlin 编译和相关资源处理。发布前优先完成 `lintRelease` 与完整 Release 构建。
 
+### GitHub Actions
+
+`.github/workflows/android-release.yml` 在每次推送到 `main` 后自动构建并创建 GitHub Release。工作流必须继续使用 JDK 17、Android SDK 35、现有 Release 签名和 `arm64-v8a` APK。
+
+工作流依赖以下仓库 Secrets：
+
+- `ANDROID_KEYSTORE_BASE64`
+- `ANDROID_KEYSTORE_PASSWORD`
+- `ANDROID_KEY_ALIAS`
+- `ANDROID_KEY_PASSWORD`
+
+不要把这些值改成工作流明文，也不要在日志中输出它们。自动发布标签使用 `v版本号-build.运行编号`，同一次工作流重新运行时应覆盖原 Release 资源，而不是因标签已存在而失败。
+
 ### 真机验证
 
 手机开启 USB 调试并授权后，可双击：
@@ -165,6 +178,7 @@ install-native.bat
 ## 发布要求
 
 - 发布新安装包时同步递增 `versionCode`，并按需更新 `versionName`。
+- 推送到 `main` 会自动创建 GitHub Release；提交前确认当前改动适合公开发布。
 - 保持 Release 的 R8 压缩和资源缩减。
 - 使用现有签名升级安装，避免破坏用户本地数据。
 - 校验 APK 包名为 `com.cgl.ifind`、应用名为 `I find`、签名有效，并确认输出元数据为 `arm64-v8a`。

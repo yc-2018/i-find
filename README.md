@@ -39,6 +39,30 @@ builds/i-find-native-arm64-v8a-release.apk
 
 手机开启 USB 调试并连接电脑后，双击 `install-native.bat` 可以直接安装或覆盖更新应用。
 
+## GitHub 自动构建和发布
+
+推送代码到 `main` 分支后，[GitHub Actions 工作流](.github/workflows/android-release.yml) 会自动：
+
+1. 配置 JDK 17 和 Android SDK 35。
+2. 使用与本地版本相同的 Release 签名构建 `arm64-v8a` APK。
+3. 上传 APK 到本次 Actions 运行的构件中。
+4. 创建 GitHub Release，并将 APK 标记为最新发布版本。
+
+自动发布标签格式为：
+
+```text
+v版本号-build.工作流运行编号
+```
+
+仓库需要配置以下 GitHub Actions Secrets：
+
+- `ANDROID_KEYSTORE_BASE64`
+- `ANDROID_KEYSTORE_PASSWORD`
+- `ANDROID_KEY_ALIAS`
+- `ANDROID_KEY_PASSWORD`
+
+签名信息只保存在 GitHub Secrets 中，不会写入代码、工作流日志或 Git 历史。
+
 ## 分支说明
 
 - `main`：当前 Kotlin 原生安卓版本
