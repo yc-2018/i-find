@@ -168,16 +168,55 @@ Debug APK 可以使用以下命令安装：
 
 推送代码到 `main` 分支后，[GitHub Actions 工作流](.github/workflows/android-release.yml) 会自动配置 JDK 17 和 Android SDK 35，构建签名的 `arm64-v8a` APK，上传 Actions Artifact，并创建 GitHub Release。
 
-仓库维护者需要在 GitHub Actions Secrets 中配置：
+### 配置 GitHub Actions Secrets
 
-- `ANDROID_KEYSTORE_BASE64`
-- `ANDROID_KEYSTORE_PASSWORD`
-- `ANDROID_KEY_ALIAS`
-- `ANDROID_KEY_PASSWORD`
+自动发布使用的签名来自本地这两个私有文件：
 
-fork 不会继承原仓库的 Secrets。其他维护者如果需要自动发布，必须使用自己的 keystore 和密码重新配置以上 Secrets；只做普通开发时直接构建 Debug APK 即可。
+```text
+android/keystores/release.keystore
+credentials.json
+```
 
-签名值只保存在 GitHub 的加密 Secrets 中，不应写入 README、工作流、Issue 或 Git 历史。
+进入 GitHub 仓库的 **Settings -> Secrets and variables -> Actions**，在 **Repository secrets** 区域点击 **New repository secret**，依次创建以下四项：
+
+| Secret 名称 | 填写内容 |
+|---|---|
+| `ANDROID_KEYSTORE_BASE64` | `release.keystore` 文件转换后的完整 Base64 文本 |
+| `ANDROID_KEYSTORE_PASSWORD` | `credentials.json` 中的 `android.keystore.keystorePassword` |
+| `ANDROID_KEY_ALIAS` | `credentials.json` 中的 `android.keystore.keyAlias` |
+| `ANDROID_KEY_PASSWORD` | `credentials.json` 中的 `android.keystore.keyPassword` |
+
+在 Windows PowerShell 中，可以使用以下命令把 keystore 的 Base64 内容直接复制到剪贴板，不会在终端打印：
+
+```powershell
+$keystore = Resolve-Path .\android\keystores\release.keystore
+[Convert]::ToBase64String([IO.File]::ReadAllBytes($keystore.Path)) | Set-Clipboard
+```
+
+执行后，将剪贴板内容粘贴为 `ANDROID_KEYSTORE_BASE64` 的值。
+
+其余三个值也可以从 `credentials.json` 安全复制到剪贴板：
+
+```powershell
+$credentials = Get-Content -Raw -Encoding UTF8 .\credentials.json | ConvertFrom-Json
+
+# ANDROID_KEYSTORE_PASSWORD
+$credentials.android.keystore.keystorePassword | Set-Clipboard
+
+# ANDROID_KEY_ALIAS
+$credentials.android.keystore.keyAlias | Set-Clipboard
+
+# ANDROID_KEY_PASSWORD
+$credentials.android.keystore.keyPassword | Set-Clipboard
+```
+
+每次只执行需要的那一条复制命令，然后立即粘贴到对应的 GitHub Secret。保存 Secret 后，GitHub 不允许再次查看原值，只能更新或删除。
+
+四项配置完成后，可以在仓库的 **Actions** 页面选择 **构建并发布 Android APK**，点击 **Run workflow** 手动测试；以后推送到 `main` 会自动构建并发布。
+
+fork 不会继承原仓库的 Secrets。其他维护者如果需要自动发布，必须使用自己的 keystore 和密码重新配置以上四项；只做普通开发时直接构建 Debug APK 即可。
+
+不要把 keystore、Base64 内容或密码写入 README、工作流、Issue、Actions 日志或 Git 历史。Base64 只是编码，不是加密。
 
 ## 分支说明
 
