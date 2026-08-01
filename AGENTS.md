@@ -25,7 +25,9 @@
 - `native-android/app/src/main/java/com/cgl/ifind/shizuku/`：Shizuku 状态、授权和解冻命令
 - `native-android/app/src/main/res/layout/`：XML 布局
 - `native-android/app/src/main/res/values/strings.xml`：用户可见中文文案
+- `setup-dev.ps1`：下载并配置项目本地 JDK 17、Android SDK 35 和 `local.properties`
 - `build-local.ps1`：完整本地 Release 构建脚本
+- `build-debug.bat`：无需私有签名的 Debug 构建入口
 - `build-native.bat`：双击构建入口
 - `install-native.bat`：双击安装入口
 
@@ -111,6 +113,30 @@ Shizuku 功能是可选增强，不能成为普通搜索的前置条件。
 - 不要无故修改应用包名、签名配置、版本号、最低 SDK 或 ABI 策略。
 
 ## 构建与验证
+
+### 初始化开发环境
+
+新克隆或 fork 的 Windows 环境在仓库根目录执行：
+
+```powershell
+.\setup-dev.ps1
+```
+
+脚本将 JDK 17、Android SDK 35 和 Gradle 缓存放入被忽略的 `.toolchains/`，并生成 `native-android/local.properties`。不要提交生成的工具链内容。
+
+### Debug 构建
+
+无需 Release 凭据即可执行：
+
+```powershell
+.\build-local.ps1 -Debug
+```
+
+输出文件为：
+
+```text
+builds/i-find-native-arm64-v8a-debug.apk
+```
 
 ### 完整 Release 构建
 

@@ -1,5 +1,6 @@
 param(
-  [switch]$Install
+  [switch]$Install,
+  [switch]$Debug
 )
 
 $ErrorActionPreference = "Stop"
@@ -9,9 +10,12 @@ $nativeRoot = Join-Path $root "native-android"
 $jdkRoot = Join-Path $root ".toolchains\jdk17"
 $sdkRoot = Join-Path $root ".toolchains\android-sdk"
 $gradleFallback = Join-Path $root ".toolchains\gradle\gradle-8.9\bin\gradle.bat"
+$gradleUserHome = Join-Path $root ".toolchains\gradle-user-home"
 $credentialsPath = Join-Path $root "credentials.json"
 $outputDirectory = Join-Path $root "builds"
-$finalApk = Join-Path $outputDirectory "i-find-native-arm64-v8a-release.apk"
+$variantName = if ($Debug) { "debug" } else { "release" }
+$gradleTask = if ($Debug) { "assembleDebug" } else { "assembleRelease" }
+$finalApk = Join-Path $outputDirectory "i-find-native-arm64-v8a-$variantName.apk"
 
 if (-not (Test-Path (Join-Path $jdkRoot "bin\java.exe"))) {
   throw "JDK 17 is not ready: $jdkRoot"
@@ -21,22 +25,26 @@ if (-not (Test-Path (Join-Path $sdkRoot "platforms\android-35\android.jar"))) {
   throw "Android SDK 35 is not ready: $sdkRoot"
 }
 
-if (-not (Test-Path $credentialsPath)) {
-  throw "Missing signing configuration: $credentialsPath"
-}
+if (-not $Debug) {
+  if (-not (Test-Path $credentialsPath)) {
+    throw "Missing signing configuration: $credentialsPath. Use -Debug to build without release credentials."
+  }
 
-$credentials = Get-Content -LiteralPath $credentialsPath -Raw | ConvertFrom-Json
-$keystore = $credentials.android.keystore
-if (-not $keystore.keystorePassword -or -not $keystore.keyAlias -or -not $keystore.keyPassword) {
-  throw "Android signing configuration is incomplete in credentials.json"
+  $credentials = Get-Content -LiteralPath $credentialsPath -Raw | ConvertFrom-Json
+  $keystore = $credentials.android.keystore
+  if (-not $keystore.keystorePassword -or -not $keystore.keyAlias -or -not $keystore.keyPassword) {
+    throw "Android signing configuration is incomplete in credentials.json"
+  }
+
+  $env:IFIND_KEYSTORE_PASSWORD = [string]$keystore.keystorePassword
+  $env:IFIND_KEY_ALIAS = [string]$keystore.keyAlias
+  $env:IFIND_KEY_PASSWORD = [string]$keystore.keyPassword
 }
 
 $env:JAVA_HOME = $jdkRoot
 $env:ANDROID_HOME = $sdkRoot
 $env:ANDROID_SDK_ROOT = $sdkRoot
-$env:IFIND_KEYSTORE_PASSWORD = [string]$keystore.keystorePassword
-$env:IFIND_KEY_ALIAS = [string]$keystore.keyAlias
-$env:IFIND_KEY_PASSWORD = [string]$keystore.keyPassword
+$env:GRADLE_USER_HOME = $gradleUserHome
 $env:Path = "$(Join-Path $jdkRoot 'bin');$(Join-Path $sdkRoot 'platform-tools');$env:Path"
 
 $localPropertiesPath = Join-Path $nativeRoot "local.properties"
@@ -58,15 +66,15 @@ if (Test-Path $gradleFallback) {
 
 Push-Location $nativeRoot
 try {
-  & $gradleCommand --no-daemon clean assembleRelease
+  & $gradleCommand --no-daemon clean $gradleTask
   if ($LASTEXITCODE -ne 0) {
-    throw "Gradle release build failed with exit code $LASTEXITCODE"
+    throw "Gradle $variantName build failed with exit code $LASTEXITCODE"
   }
 } finally {
   Pop-Location
 }
 
-$apkDirectory = Join-Path $nativeRoot "app\build\outputs\apk\release"
+$apkDirectory = Join-Path $nativeRoot "app\build\outputs\apk\$variantName"
 $builtApk = Get-ChildItem -LiteralPath $apkDirectory -Filter "*.apk" -File |
   Where-Object { $_.Name -match "arm64-v8a" } |
   Sort-Object Length -Descending |

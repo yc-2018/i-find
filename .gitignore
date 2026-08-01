@@ -44,7 +44,9 @@ credentials.json
 .keystore-meta.json
 
 # Project-local Android toolchain and native build output
-.toolchains/
+.toolchains/**
+!.toolchains/
+!.toolchains/README.md
 builds/
 unpackage/
 native-android/.gradle/

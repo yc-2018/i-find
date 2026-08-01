@@ -1,6 +1,6 @@
 # I find
 
-`I find` 是一款使用 Kotlin 和 XML Views 编写的轻量级原生安卓搜索启动器。
+`I find` 是一款使用 Kotlin 和 XML Views 编写的轻量级原生安卓搜索启动器。当前只构建 `arm64-v8a` APK，最低支持 Android 8.0（API 26）。
 
 ## 主要功能
 
@@ -8,62 +8,182 @@
 - 新增、编辑、隐藏、删除及拖拽排序搜索项
 - 支持内置图标、已安装应用图标、相册图片、首字图标和网络图片
 - 网络图片首次加载成功后缓存到本地
-- 搜索历史按日期分组，可折叠、单独删除或按天清空
+- 搜索历史按日期分组，可折叠、单独删除、按天清空或全部清空
 - 可选用 Shizuku 自动恢复被禁用、暂停或冻结的应用
 - 搜索项、设置和历史记录均保存在设备本地
 
-## 项目目录
+## 项目结构
 
-- `native-android/`：当前 Android Studio 原生项目
-- `build-native.bat`：在 Windows 本地构建签名 APK
-- `install-native.bat`：把现有 APK 安装到已连接的安卓设备
-- `build-local.ps1`：Windows 本地构建脚本
+- `native-android/`：Kotlin 原生 Android 项目，使用 XML Views 和 ViewBinding
+- `.toolchains/`：项目本地 JDK、Android SDK 和构建缓存，仅提交目录说明
+- `setup-dev.ps1`：Windows 开发环境一键初始化脚本
+- `build-debug.bat`：无需发布签名的 Debug APK 构建入口
+- `build-native.bat`：使用私有签名构建 Release APK
+- `install-native.bat`：安装已构建的 Release APK 到 USB 设备
+- `.github/workflows/android-release.yml`：推送 `main` 后自动构建和发布
 
-进行安卓开发时，请使用 Android Studio 打开 `native-android/` 目录。
+进行 Android 开发时，请使用 Android Studio 打开 `native-android/`，不要把仓库根目录当作 Android 工程打开。
 
-## 本地构建
+## 从零开始
 
-本地构建脚本需要以下文件和工具：
+### 环境要求
 
-- 项目本地 JDK 和 Android SDK：`.toolchains/`
-- 安卓签名配置：`credentials.json`
-- Release 签名文件：`android/keystores/release.keystore`
+- Windows 10 或 Windows 11，64 位
+- PowerShell 5.1 或更高版本
+- 可访问 Adoptium、Google Android 仓库和 Gradle 下载服务的网络
+- 首次初始化及依赖下载建议预留约 2 GB 磁盘空间
 
-这些本地工具、凭据和签名文件均已被 Git 忽略，不会上传到仓库。
+不需要预先安装 Node.js、Expo、Android Studio、JDK 或 Android SDK。命令行开发所需的 JDK 17 和 Android SDK 35 可以由项目脚本下载到 `.toolchains/`。
 
-双击 `build-native.bat` 可以构建 APK。生成的安装包位于：
+### 1. 克隆项目
+
+```powershell
+git clone git@github.com:yc-2018/i-find.git
+cd i-find
+```
+
+没有配置 GitHub SSH Key 时，也可以使用 HTTPS：
+
+```powershell
+git clone https://github.com/yc-2018/i-find.git
+cd i-find
+```
+
+### 2. 初始化本地工具链
+
+在仓库根目录执行：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\setup-dev.ps1
+```
+
+脚本会自动完成：
+
+1. 下载并解压 JDK 17 到 `.toolchains/jdk17/`。
+2. 下载 Android SDK 命令行工具到 `.toolchains/android-sdk/`。
+3. 接受 Android SDK 许可证并安装 Platform Tools、API 35 和 Build Tools 35.0.0。
+4. 生成已被 Git 忽略的 `native-android/local.properties`。
+
+下载中断时可以直接重新运行。需要彻底重装时执行：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\setup-dev.ps1 -Force
+```
+
+`.toolchains/` 中除 [说明文件](.toolchains/README.md) 外的所有内容均被 Git 忽略，不需要也不应该上传。
+
+### 3. 构建 Debug APK
+
+普通开发和 fork 测试不需要原作者的签名文件或 GitHub Secrets：
+
+```powershell
+.\build-local.ps1 -Debug
+```
+
+也可以双击：
+
+```text
+build-debug.bat
+```
+
+生成文件位于：
+
+```text
+builds/i-find-native-arm64-v8a-debug.apk
+```
+
+Debug 版包名为 `com.cgl.ifind.debug`，可以和正式版同时安装。
+
+## 使用 Android Studio
+
+希望通过图形界面开发时，可以安装最新版 Android Studio，并按以下方式打开项目：
+
+1. 先运行 `setup-dev.ps1`，或者自行安装 JDK 17、Android SDK Platform 35 和 Build Tools 35.0.0。
+2. 在 Android Studio 中选择 **Open**，打开仓库内的 `native-android/`。
+3. Gradle JDK 选择 JDK 17；使用脚本初始化时路径为 `.toolchains/jdk17/`。
+4. 等待 Gradle 同步完成，选择 `app` 配置后连接真机运行。
+
+如果使用自己安装的 Android SDK，请在不提交的 `native-android/local.properties` 中写入：
+
+```properties
+sdk.dir=C:/Users/your-name/AppData/Local/Android/Sdk
+```
+
+macOS 或 Linux 用户需要自行安装 JDK 17 和 Android SDK 35，然后在 `native-android/` 中运行：
+
+```bash
+./gradlew assembleDebug
+```
+
+## Release 签名构建
+
+Release 构建用于升级正式安装版本，必须由发布者使用自己的私有签名。fork 项目不需要、也无法获得本仓库的 Release 私钥。
+
+本地 Release 构建需要：
+
+```text
+android/keystores/release.keystore
+credentials.json
+```
+
+可以将 [credentials.example.json](credentials.example.json) 复制为 `credentials.json`，再填写自己的签名信息。签名文件可使用 JDK 自带的 `keytool` 创建，例如：
+
+```powershell
+New-Item -ItemType Directory -Force .\android\keystores
+& .\.toolchains\jdk17\bin\keytool.exe -genkeypair -v -keystore .\android\keystores\release.keystore -alias ifind -keyalg RSA -keysize 2048 -validity 10000
+Copy-Item .\credentials.example.json .\credentials.json
+```
+
+请妥善保存 keystore、别名和密码。丢失原签名后，无法通过覆盖安装升级原应用。
+
+配置完成后执行：
+
+```powershell
+.\build-local.ps1
+```
+
+或双击 `build-native.bat`。生成文件位于：
 
 ```text
 builds/i-find-native-arm64-v8a-release.apk
 ```
 
-手机开启 USB 调试并连接电脑后，双击 `install-native.bat` 可以直接安装或覆盖更新应用。
+`credentials.json`、`*.keystore`、APK、`.toolchains/` 实际工具文件和构建目录均已被 Git 忽略。
+
+## 真机安装
+
+手机开启开发者选项和 USB 调试，连接电脑并接受授权提示后，正式版可以双击：
+
+```text
+install-native.bat
+```
+
+Debug APK 可以使用以下命令安装：
+
+```powershell
+.\.toolchains\android-sdk\platform-tools\adb.exe install -r .\builds\i-find-native-arm64-v8a-debug.apk
+```
 
 ## GitHub 自动构建和发布
 
-推送代码到 `main` 分支后，[GitHub Actions 工作流](.github/workflows/android-release.yml) 会自动：
+推送代码到 `main` 分支后，[GitHub Actions 工作流](.github/workflows/android-release.yml) 会自动配置 JDK 17 和 Android SDK 35，构建签名的 `arm64-v8a` APK，上传 Actions Artifact，并创建 GitHub Release。
 
-1. 配置 JDK 17 和 Android SDK 35。
-2. 使用与本地版本相同的 Release 签名构建 `arm64-v8a` APK。
-3. 上传 APK 到本次 Actions 运行的构件中。
-4. 创建 GitHub Release，并将 APK 标记为最新发布版本。
-
-自动发布标签格式为：
-
-```text
-v版本号-build.工作流运行编号
-```
-
-仓库需要配置以下 GitHub Actions Secrets：
+仓库维护者需要在 GitHub Actions Secrets 中配置：
 
 - `ANDROID_KEYSTORE_BASE64`
 - `ANDROID_KEYSTORE_PASSWORD`
 - `ANDROID_KEY_ALIAS`
 - `ANDROID_KEY_PASSWORD`
 
-签名信息只保存在 GitHub Secrets 中，不会写入代码、工作流日志或 Git 历史。
+fork 不会继承原仓库的 Secrets。其他维护者如果需要自动发布，必须使用自己的 keystore 和密码重新配置以上 Secrets；只做普通开发时直接构建 Debug APK 即可。
+
+签名值只保存在 GitHub 的加密 Secrets 中，不应写入 README、工作流、Issue 或 Git 历史。
 
 ## 分支说明
 
-- `main`：当前 Kotlin 原生安卓版本
+- `main`：当前 Kotlin 原生 Android 版本
 - `legacy`：旧 Expo 和单文件 H5 版本归档
+
+## 许可证与依赖
+
+项目通过 Gradle 使用 AndroidX 和 Shizuku 等第三方依赖。第三方组件仍适用其各自的开源许可证。
