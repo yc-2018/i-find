@@ -103,6 +103,23 @@ Debug 版包名为 `com.cgl.ifind.debug`，可以和正式版同时安装。
 3. Gradle JDK 选择 JDK 17；使用脚本初始化时路径为 `.toolchains/jdk17/`。
 4. 等待 Gradle 同步完成，选择 `app` 配置后连接真机运行。
 
+### IDEA 和 Android Studio 的 Gradle 目录
+
+在 **Settings -> Build, Execution, Deployment -> Build Tools -> Gradle** 中，各目录应这样选择：
+
+| 设置项 | 推荐值 |
+|---|---|
+| 项目根目录 | `<仓库目录>\native-android` |
+| Gradle 项目文件 | `<仓库目录>\native-android\settings.gradle.kts` |
+| Gradle 用户主目录 | `<仓库目录>\.toolchains\gradle-user-home` |
+| Gradle 分发 | 使用项目的 Gradle Wrapper |
+| Gradle JVM | `<仓库目录>\.toolchains\jdk17` |
+| Android SDK | `<仓库目录>\.toolchains\android-sdk` |
+
+Gradle 用户主目录用于保存 Gradle 下载文件和依赖缓存。也可以保留 IDEA 默认的 `C:\Users\用户名\.gradle`，但会和项目本地缓存分别占用空间并可能重复下载依赖。
+
+不要把 `native-android/.gradle` 选为 Gradle 用户主目录。它只是当前 Android 工程自动生成的项目级缓存目录，可以随时重新生成，并且已被 Git 忽略。
+
 如果使用自己安装的 Android SDK，请在不提交的 `native-android/local.properties` 中写入：
 
 ```properties
