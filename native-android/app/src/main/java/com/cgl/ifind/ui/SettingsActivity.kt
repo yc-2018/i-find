@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -24,6 +25,7 @@ class SettingsActivity : AppCompatActivity(), SettingsAdapterListener {
   private lateinit var itemTouchHelper: ItemTouchHelper
   private lateinit var shizukuBridge: ShizukuBridge
   private var currentStatus: ShizukuStatus? = null
+  private var currentPage = SettingsPage.TARGETS
   private var dragChanged = false
 
   private val editorLauncher = registerForActivityResult(
@@ -50,6 +52,10 @@ class SettingsActivity : AppCompatActivity(), SettingsAdapterListener {
 
     itemTouchHelper = ItemTouchHelper(createDragCallback())
     itemTouchHelper.attachToRecyclerView(binding.settingsList)
+    binding.backButton.setOnClickListener { finish() }
+    binding.targetsTab.setOnClickListener { showPage(SettingsPage.TARGETS) }
+    binding.appSettingsTab.setOnClickListener { showPage(SettingsPage.APP_SETTINGS) }
+    updatePageTabs()
     reloadTargets()
     updateHeader(currentStatus)
   }
@@ -86,8 +92,6 @@ class SettingsActivity : AppCompatActivity(), SettingsAdapterListener {
     shizukuBridge.close()
     super.onDestroy()
   }
-
-  override fun onBack() = finish()
 
   override fun onAdd() {
     editorLauncher.launch(Intent(this, TargetEditorActivity::class.java))
@@ -189,6 +193,35 @@ class SettingsActivity : AppCompatActivity(), SettingsAdapterListener {
 
   private fun reloadTargets() {
     settingsAdapter.submitTargets(store.getTargets())
+  }
+
+  private fun showPage(page: SettingsPage) {
+    if (currentPage == page) return
+    persistDraggedOrder()
+    binding.settingsList.stopScroll()
+    currentPage = page
+    settingsAdapter.showPage(page)
+    binding.settingsList.scrollToPosition(0)
+    updatePageTabs()
+  }
+
+  private fun updatePageTabs() {
+    val selectedTextColor = ContextCompat.getColor(this, R.color.accent)
+    val unselectedTextColor = ContextCompat.getColor(this, R.color.subtle_text)
+    val targetsSelected = currentPage == SettingsPage.TARGETS
+
+    binding.targetsTab.setBackgroundResource(
+      if (targetsSelected) R.drawable.bg_settings_tab_selected else android.R.color.transparent
+    )
+    binding.targetsTab.setTextColor(
+      if (targetsSelected) selectedTextColor else unselectedTextColor
+    )
+    binding.appSettingsTab.setBackgroundResource(
+      if (targetsSelected) android.R.color.transparent else R.drawable.bg_settings_tab_selected
+    )
+    binding.appSettingsTab.setTextColor(
+      if (targetsSelected) unselectedTextColor else selectedTextColor
+    )
   }
 
   private fun updateHeader(status: ShizukuStatus?) {

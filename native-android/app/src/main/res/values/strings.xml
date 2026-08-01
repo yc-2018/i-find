@@ -25,7 +25,9 @@
     <string name="clear_day">清除当天</string>
     <string name="confirm_clear_day">确定清除“%1$s”的全部搜索历史吗？</string>
 
-    <string name="settings_title">配置搜索项</string>
+    <string name="settings_title">设置</string>
+    <string name="settings_tab_targets">搜索项</string>
+    <string name="settings_tab_app">应用设置</string>
     <string name="back">返回</string>
     <string name="add_target">新增搜索项</string>
     <string name="restore_defaults">恢复默认</string>

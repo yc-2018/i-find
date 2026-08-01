@@ -225,6 +225,6 @@ class MainActivity : AppCompatActivity() {
 
   companion object {
     private const val DEFAULT_GRID_SPACING_DP = 8
-    private const val COMPACT_GRID_SPACING_DP = 4
+    private const val COMPACT_GRID_SPACING_DP = 6
   }
 }

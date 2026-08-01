@@ -8,10 +8,16 @@ import androidx.recyclerview.widget.RecyclerView
 import com.cgl.ifind.R
 import com.cgl.ifind.data.AppStore
 import com.cgl.ifind.data.SearchTarget
+import com.cgl.ifind.databinding.ItemAppSettingsBinding
 import com.cgl.ifind.databinding.ItemSettingsFooterBinding
 import com.cgl.ifind.databinding.ItemSettingsHeaderBinding
 import com.cgl.ifind.databinding.ItemSettingsTargetBinding
 import com.cgl.ifind.util.IconLoader
+
+enum class SettingsPage {
+  TARGETS,
+  APP_SETTINGS
+}
 
 data class SettingsHeaderState(
   val historyEnabled: Boolean = true,
@@ -28,7 +34,6 @@ data class SettingsHeaderState(
 )
 
 interface SettingsAdapterListener {
-  fun onBack()
   fun onAdd()
   fun onRestore()
   fun onHistoryChanged(enabled: Boolean)
@@ -48,6 +53,7 @@ class SettingsAdapter(
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
   private val targets = mutableListOf<SearchTarget>()
   private var headerState = SettingsHeaderState()
+  private var currentPage = SettingsPage.TARGETS
 
   init {
     setHasStableIds(true)
@@ -59,18 +65,30 @@ class SettingsAdapter(
     notifyDataSetChanged()
   }
 
+  fun showPage(page: SettingsPage) {
+    if (currentPage == page) return
+    currentPage = page
+    notifyDataSetChanged()
+  }
+
   fun updateHeader(nextState: SettingsHeaderState) {
     val packageVisibilityChanged =
       headerState.packageNamesVisible != nextState.packageNamesVisible
     headerState = nextState
-    notifyItemChanged(0)
-    if (packageVisibilityChanged && targets.isNotEmpty()) {
+    if (currentPage == SettingsPage.APP_SETTINGS) {
+      notifyItemChanged(0)
+    }
+    if (
+      currentPage == SettingsPage.TARGETS &&
+      packageVisibilityChanged &&
+      targets.isNotEmpty()
+    ) {
       notifyItemRangeChanged(1, targets.size)
     }
   }
 
   fun isTargetPosition(adapterPosition: Int): Boolean {
-    return adapterPosition in 1..targets.size
+    return currentPage == SettingsPage.TARGETS && adapterPosition in 1..targets.size
   }
 
   fun moveTarget(fromAdapterPosition: Int, toAdapterPosition: Int): Boolean {
@@ -95,12 +113,16 @@ class SettingsAdapter(
   override fun getItemId(position: Int): Long {
     return when (getItemViewType(position)) {
       VIEW_TYPE_HEADER -> Long.MIN_VALUE
+      VIEW_TYPE_APP_SETTINGS -> Long.MIN_VALUE + 1
       VIEW_TYPE_FOOTER -> Long.MAX_VALUE
       else -> targets[position - 1].id.hashCode().toLong()
     }
   }
 
   override fun getItemViewType(position: Int): Int {
+    if (currentPage == SettingsPage.APP_SETTINGS) {
+      return if (position == 0) VIEW_TYPE_APP_SETTINGS else VIEW_TYPE_FOOTER
+    }
     return when (position) {
       0 -> VIEW_TYPE_HEADER
       itemCount - 1 -> VIEW_TYPE_FOOTER
@@ -112,6 +134,9 @@ class SettingsAdapter(
     val inflater = LayoutInflater.from(parent.context)
     return when (viewType) {
       VIEW_TYPE_HEADER -> HeaderViewHolder(ItemSettingsHeaderBinding.inflate(inflater, parent, false))
+      VIEW_TYPE_APP_SETTINGS -> AppSettingsViewHolder(
+        ItemAppSettingsBinding.inflate(inflater, parent, false)
+      )
       VIEW_TYPE_FOOTER -> FooterViewHolder(ItemSettingsFooterBinding.inflate(inflater, parent, false))
       else -> TargetViewHolder(ItemSettingsTargetBinding.inflate(inflater, parent, false))
     }
@@ -119,20 +144,29 @@ class SettingsAdapter(
 
   override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
     when (holder) {
-      is HeaderViewHolder -> holder.bind(headerState)
+      is HeaderViewHolder -> holder.bind()
+      is AppSettingsViewHolder -> holder.bind(headerState)
       is TargetViewHolder -> holder.bind(targets[position - 1])
     }
   }
 
-  override fun getItemCount(): Int = targets.size + 2
+  override fun getItemCount(): Int {
+    return if (currentPage == SettingsPage.APP_SETTINGS) 2 else targets.size + 2
+  }
 
   inner class HeaderViewHolder(
     private val binding: ItemSettingsHeaderBinding
   ) : RecyclerView.ViewHolder(binding.root) {
-    fun bind(state: SettingsHeaderState) {
-      binding.backButton.setOnClickListener { listener.onBack() }
+    fun bind() {
       binding.addButton.setOnClickListener { listener.onAdd() }
       binding.restoreButton.setOnClickListener { listener.onRestore() }
+    }
+  }
+
+  inner class AppSettingsViewHolder(
+    private val binding: ItemAppSettingsBinding
+  ) : RecyclerView.ViewHolder(binding.root) {
+    fun bind(state: SettingsHeaderState) {
       binding.refreshStatusButton.setOnClickListener { listener.onRefreshStatus() }
       binding.shizukuActionButton.setOnClickListener { listener.onShizukuAction() }
 
@@ -222,5 +256,6 @@ class SettingsAdapter(
     private const val VIEW_TYPE_HEADER = 0
     private const val VIEW_TYPE_TARGET = 1
     private const val VIEW_TYPE_FOOTER = 2
+    private const val VIEW_TYPE_APP_SETTINGS = 3
   }
 }
