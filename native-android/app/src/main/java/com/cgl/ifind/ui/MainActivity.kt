@@ -25,7 +25,10 @@ class MainActivity : AppCompatActivity() {
   private lateinit var binding: ActivityMainBinding
   private lateinit var store: AppStore
   private lateinit var targetAdapter: TargetGridAdapter
+  private lateinit var targetLayoutManager: GridLayoutManager
   private lateinit var targetTouchHelper: ItemTouchHelper
+  private var targetGridDecoration: GridSpacingItemDecoration? = null
+  private var currentColumnCount = 0
   private var homeDragChanged = false
 
   private val historyLauncher = registerForActivityResult(
@@ -48,15 +51,14 @@ class MainActivity : AppCompatActivity() {
 
     store = AppStore(applicationContext)
     targetAdapter = TargetGridAdapter(::searchTarget)
+    targetLayoutManager = GridLayoutManager(this, AppStore.HOME_COLUMN_COUNT_DEFAULT)
 
     binding.targetList.apply {
-      layoutManager = GridLayoutManager(this@MainActivity, COLUMN_COUNT)
+      layoutManager = targetLayoutManager
       adapter = targetAdapter
       itemAnimator = null
-      addItemDecoration(
-        GridSpacingItemDecoration(COLUMN_COUNT, (8 * resources.displayMetrics.density).toInt())
-      )
     }
+    updateTargetGridColumns()
     targetTouchHelper = ItemTouchHelper(createTargetDragCallback())
     targetTouchHelper.attachToRecyclerView(binding.targetList)
 
@@ -87,6 +89,7 @@ class MainActivity : AppCompatActivity() {
 
   override fun onResume() {
     super.onResume()
+    updateTargetGridColumns()
     reloadTargets()
   }
 
@@ -99,6 +102,25 @@ class MainActivity : AppCompatActivity() {
     val visibleTargets = store.getTargets().filterNot { it.hidden }.sortedBy { it.sortOrder }
     targetAdapter.submitTargets(visibleTargets, store.areTargetLabelsVisible())
     binding.emptyState.isVisible = visibleTargets.isEmpty()
+  }
+
+  private fun updateTargetGridColumns() {
+    val columnCount = store.getHomeColumnCount()
+    if (columnCount == currentColumnCount) return
+
+    targetLayoutManager.spanCount = columnCount
+    targetGridDecoration?.let(binding.targetList::removeItemDecoration)
+    val spacingDp = if (columnCount == AppStore.HOME_COLUMN_COUNT_COMPACT) {
+      COMPACT_GRID_SPACING_DP
+    } else {
+      DEFAULT_GRID_SPACING_DP
+    }
+    targetGridDecoration = GridSpacingItemDecoration(
+      columnCount,
+      (spacingDp * resources.displayMetrics.density).toInt()
+    ).also(binding.targetList::addItemDecoration)
+    currentColumnCount = columnCount
+    binding.targetList.invalidateItemDecorations()
   }
 
   private fun searchTarget(target: SearchTarget) {
@@ -202,6 +224,7 @@ class MainActivity : AppCompatActivity() {
   }
 
   companion object {
-    private const val COLUMN_COUNT = 4
+    private const val DEFAULT_GRID_SPACING_DP = 8
+    private const val COMPACT_GRID_SPACING_DP = 4
   }
 }

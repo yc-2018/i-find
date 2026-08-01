@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.cgl.ifind.R
+import com.cgl.ifind.data.AppStore
 import com.cgl.ifind.data.SearchTarget
 import com.cgl.ifind.databinding.ItemSettingsFooterBinding
 import com.cgl.ifind.databinding.ItemSettingsHeaderBinding
@@ -15,6 +16,7 @@ import com.cgl.ifind.util.IconLoader
 data class SettingsHeaderState(
   val historyEnabled: Boolean = true,
   val targetLabelsVisible: Boolean = true,
+  val homeColumnCount: Int = AppStore.HOME_COLUMN_COUNT_DEFAULT,
   val autoDefrostEnabled: Boolean = false,
   val canAutoDefrost: Boolean = false,
   val statusLabel: String = "",
@@ -31,6 +33,7 @@ interface SettingsAdapterListener {
   fun onRestore()
   fun onHistoryChanged(enabled: Boolean)
   fun onTargetLabelsChanged(visible: Boolean)
+  fun onHomeColumnCountChanged(columnCount: Int)
   fun onAutoDefrostChanged(enabled: Boolean)
   fun onShizukuAction()
   fun onRefreshStatus()
@@ -143,6 +146,19 @@ class SettingsAdapter(
       binding.targetLabelsSwitch.isChecked = state.targetLabelsVisible
       binding.targetLabelsSwitch.setOnCheckedChangeListener { _, checked ->
         listener.onTargetLabelsChanged(checked)
+      }
+
+      binding.homeFiveColumnsSwitch.setOnCheckedChangeListener(null)
+      binding.homeFiveColumnsSwitch.isChecked =
+        state.homeColumnCount == AppStore.HOME_COLUMN_COUNT_COMPACT
+      binding.homeFiveColumnsSwitch.setOnCheckedChangeListener { _, checked ->
+        listener.onHomeColumnCountChanged(
+          if (checked) {
+            AppStore.HOME_COLUMN_COUNT_COMPACT
+          } else {
+            AppStore.HOME_COLUMN_COUNT_DEFAULT
+          }
+        )
       }
 
       binding.autoDefrostSwitch.setOnCheckedChangeListener(null)

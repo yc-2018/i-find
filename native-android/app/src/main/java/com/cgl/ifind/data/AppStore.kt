@@ -95,6 +95,22 @@ class AppStore(private val context: Context) {
     preferences.edit().putBoolean(KEY_SHOW_TARGET_LABELS, visible).apply()
   }
 
+  fun getHomeColumnCount(): Int {
+    return when (preferences.getInt(KEY_HOME_COLUMN_COUNT, HOME_COLUMN_COUNT_DEFAULT)) {
+      HOME_COLUMN_COUNT_COMPACT -> HOME_COLUMN_COUNT_COMPACT
+      else -> HOME_COLUMN_COUNT_DEFAULT
+    }
+  }
+
+  fun setHomeColumnCount(columnCount: Int) {
+    val normalizedColumnCount = if (columnCount == HOME_COLUMN_COUNT_COMPACT) {
+      HOME_COLUMN_COUNT_COMPACT
+    } else {
+      HOME_COLUMN_COUNT_DEFAULT
+    }
+    preferences.edit().putInt(KEY_HOME_COLUMN_COUNT, normalizedColumnCount).apply()
+  }
+
   fun isAutoDefrostEnabled(): Boolean = preferences.getBoolean(KEY_AUTO_DEFROST, false)
 
   fun setAutoDefrostEnabled(enabled: Boolean) {
@@ -263,11 +279,15 @@ class AppStore(private val context: Context) {
   }
 
   companion object {
+    const val HOME_COLUMN_COUNT_DEFAULT = 4
+    const val HOME_COLUMN_COUNT_COMPACT = 5
+
     private const val PREFERENCES_NAME = "ifind_native_preferences"
     private const val KEY_TARGETS = "search_targets_json"
     private const val KEY_HISTORY = "search_history_json"
     private const val KEY_RECORD_HISTORY = "record_history"
     private const val KEY_SHOW_TARGET_LABELS = "show_target_labels"
+    private const val KEY_HOME_COLUMN_COUNT = "home_column_count"
     private const val KEY_AUTO_DEFROST = "auto_defrost"
     private const val KEY_LEGACY_MIGRATED = "legacy_expo_migrated"
     private const val MAX_HISTORY_ITEMS = 500

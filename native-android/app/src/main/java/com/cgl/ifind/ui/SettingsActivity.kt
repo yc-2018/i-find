@@ -115,6 +115,11 @@ class SettingsActivity : AppCompatActivity(), SettingsAdapterListener {
     updateHeader(currentStatus)
   }
 
+  override fun onHomeColumnCountChanged(columnCount: Int) {
+    store.setHomeColumnCount(columnCount)
+    updateHeader(currentStatus)
+  }
+
   override fun onAutoDefrostChanged(enabled: Boolean) {
     if (enabled && currentStatus?.state != ShizukuState.READY) {
       Toast.makeText(this, R.string.auto_defrost_not_ready, Toast.LENGTH_SHORT).show()
@@ -219,6 +224,7 @@ class SettingsActivity : AppCompatActivity(), SettingsAdapterListener {
       SettingsHeaderState(
         historyEnabled = store.isHistoryRecordingEnabled(),
         targetLabelsVisible = store.areTargetLabelsVisible(),
+        homeColumnCount = store.getHomeColumnCount(),
         autoDefrostEnabled = store.isAutoDefrostEnabled(),
         canAutoDefrost = state == ShizukuState.READY,
         statusLabel = statusLabel,
