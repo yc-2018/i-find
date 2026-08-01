@@ -1,26 +1,6 @@
 package com.cgl.ifind.data
 
-data class BuiltinIconChoice(
-  val key: String,
-  val label: String
-)
-
 object DefaultTargets {
-  val builtinIconChoices = listOf(
-    BuiltinIconChoice("asset:douyin", "抖音"),
-    BuiltinIconChoice("asset:bilibili", "B 站"),
-    BuiltinIconChoice("asset:meituan", "美团"),
-    BuiltinIconChoice("asset:xhs", "小红书"),
-    BuiltinIconChoice("asset:jd", "京东"),
-    BuiltinIconChoice("asset:taobao", "淘宝"),
-    BuiltinIconChoice("asset:pdd", "拼多多"),
-    BuiltinIconChoice("builtin:search", "搜索"),
-    BuiltinIconChoice("builtin:shopping", "购物"),
-    BuiltinIconChoice("builtin:play", "视频"),
-    BuiltinIconChoice("builtin:note", "笔记"),
-    BuiltinIconChoice("builtin:web", "网页")
-  )
-
   fun create(): List<SearchTarget> = listOf(
     SearchTarget(
       id = "douyin",
@@ -29,7 +9,7 @@ object DefaultTargets {
       fallbackTemplate = "https://www.douyin.com/search/{keyword}",
       androidPackageName = "com.ss.android.ugc.aweme",
       iconMode = IconModes.BUILTIN,
-      iconValue = "asset:douyin",
+      iconValue = "douyin.png",
       hidden = false,
       sortOrder = 0
     ),
@@ -40,7 +20,7 @@ object DefaultTargets {
       fallbackTemplate = "https://search.bilibili.com/all?keyword={keyword}",
       androidPackageName = "tv.danmaku.bili",
       iconMode = IconModes.BUILTIN,
-      iconValue = "asset:bilibili",
+      iconValue = "bilibili.png",
       hidden = false,
       sortOrder = 1
     ),
@@ -51,7 +31,7 @@ object DefaultTargets {
       fallbackTemplate = "https://www.meituan.com/s/{keyword}",
       androidPackageName = "com.sankuai.meituan",
       iconMode = IconModes.BUILTIN,
-      iconValue = "asset:meituan",
+      iconValue = "meituan.png",
       hidden = false,
       sortOrder = 2
     ),
@@ -62,7 +42,7 @@ object DefaultTargets {
       fallbackTemplate = "https://www.xiaohongshu.com/search_result?keyword={keyword}",
       androidPackageName = "com.xingin.xhs",
       iconMode = IconModes.BUILTIN,
-      iconValue = "asset:xhs",
+      iconValue = "xhs.png",
       hidden = false,
       sortOrder = 3
     ),
@@ -73,7 +53,7 @@ object DefaultTargets {
       fallbackTemplate = "https://so.m.jd.com/ware/search.action?keyword={keyword}",
       androidPackageName = "com.jingdong.app.mall",
       iconMode = IconModes.BUILTIN,
-      iconValue = "asset:jd",
+      iconValue = "jd.png",
       hidden = false,
       sortOrder = 4
     ),
@@ -84,7 +64,7 @@ object DefaultTargets {
       fallbackTemplate = "https://s.taobao.com/search?q={keyword}",
       androidPackageName = "com.taobao.taobao",
       iconMode = IconModes.BUILTIN,
-      iconValue = "asset:taobao",
+      iconValue = "taobao.png",
       hidden = false,
       sortOrder = 5
     ),
@@ -95,7 +75,7 @@ object DefaultTargets {
       fallbackTemplate = "https://mobile.yangkeduo.com/search_result.html?search_key={keyword}",
       androidPackageName = "com.xunmeng.pinduoduo",
       iconMode = IconModes.BUILTIN,
-      iconValue = "asset:pdd",
+      iconValue = "pdd.png",
       hidden = false,
       sortOrder = 6
     ),
@@ -104,7 +84,7 @@ object DefaultTargets {
       name = "百度",
       primaryTemplate = "https://www.baidu.com/s?wd={keyword}",
       iconMode = IconModes.BUILTIN,
-      iconValue = "builtin:web",
+      iconValue = "web.svg",
       hidden = false,
       sortOrder = 7
     )

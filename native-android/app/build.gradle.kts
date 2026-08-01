@@ -11,8 +11,8 @@ android {
     applicationId = "com.cgl.ifind"
     minSdk = 26
     targetSdk = 35
-    versionCode = 4
-    versionName = "2.2.0"
+    versionCode = 5
+    versionName = "2.3.0"
 
     vectorDrawables {
       useSupportLibrary = true
@@ -80,6 +80,7 @@ dependencies {
   implementation("androidx.appcompat:appcompat:1.7.0")
   implementation("androidx.core:core-ktx:1.15.0")
   implementation("androidx.recyclerview:recyclerview:1.4.0")
+  implementation("com.caverock:androidsvg-aar:1.4")
   implementation("dev.rikka.shizuku:api:13.1.5")
   implementation("dev.rikka.shizuku:provider:13.1.5")
 }

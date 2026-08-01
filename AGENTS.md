@@ -6,7 +6,7 @@
 
 - 应用名称：`I find`
 - Android 包名：`com.cgl.ifind`
-- 当前版本：`2.2.0`（`versionCode = 4`）
+- 当前版本：`2.3.0`（`versionCode = 5`）
 - 当前实现：Kotlin + XML Views + ViewBinding
 - 当前主项目：`native-android/`
 - 最低 Android：API 26
@@ -23,6 +23,7 @@
 - `native-android/app/src/main/java/com/cgl/ifind/ui/`：Activity、RecyclerView Adapter 和界面交互
 - `native-android/app/src/main/java/com/cgl/ifind/util/`：搜索启动、图标加载、网络图标缓存和应用状态检测
 - `native-android/app/src/main/java/com/cgl/ifind/shizuku/`：Shizuku 状态、授权和解冻命令
+- `native-android/app/src/main/assets/builtin-icons/`：按文件名自动发现的内置图片图标
 - `native-android/app/src/main/res/layout/`：XML 布局
 - `native-android/app/src/main/res/values/strings.xml`：用户可见中文文案
 - `setup-dev.ps1`：下载并配置项目本地 JDK 17、Android SDK 35 和 `local.properties`
@@ -75,6 +76,10 @@
 - `gallery`
 - `generated`
 - `remote`
+
+新增内置图片图标时，只把 `.png`、`.webp`、`.jpg`、`.jpeg` 或 `.svg` 文件放入 `app/src/main/assets/builtin-icons/`。文件名就是稳定的 `iconValue`，选择器只显示图标，不显示文件名或人为标签。不要为目录图标新增 JSON 清单、名称映射或逐项 Kotlin 注册。
+
+保留 `IconLoader` 中旧 `asset:*`、`builtin:*` 和 `mdi:*` 资源映射，用于兼容已有本地数据。新增目录图标不得删除或覆盖这些旧键的加载能力。
 
 相册图片必须复制到应用私有目录，不能长期保存系统临时 URI。替换或删除相册图标时，只允许删除应用私有 `files/icons/` 目录内由本应用管理的文件。
 

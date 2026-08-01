@@ -10,7 +10,6 @@ import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import com.cgl.ifind.R
 import com.cgl.ifind.data.AppStore
-import com.cgl.ifind.data.DefaultTargets
 import com.cgl.ifind.data.IconModes
 import com.cgl.ifind.data.SearchTarget
 import com.cgl.ifind.databinding.ActivityTargetEditorBinding
@@ -27,7 +26,7 @@ class TargetEditorActivity : AppCompatActivity() {
   private lateinit var shizukuBridge: ShizukuBridge
   private var existingTarget: SearchTarget? = null
   private var selectedIconMode = IconModes.GENERATED
-  private var builtinIconValue = DefaultTargets.builtinIconChoices.first().key
+  private var builtinIconValue = IconLoader.DEFAULT_BUILTIN_ICON_VALUE
   private var installedAppIconValue = ""
   private var galleryIconValue = ""
   private var remoteIconUrl = ""

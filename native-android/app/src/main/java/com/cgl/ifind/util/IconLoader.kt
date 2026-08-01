@@ -1,37 +1,47 @@
 package com.cgl.ifind.util
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import android.graphics.drawable.Drawable
 import android.net.Uri
+import android.util.LruCache
 import android.widget.ImageView
 import com.cgl.ifind.R
 import com.cgl.ifind.data.IconModes
 import com.cgl.ifind.data.SearchTarget
+import com.caverock.androidsvg.SVG
 import java.io.File
+import java.util.Locale
 
 object IconLoader {
-  private val builtinResources = mapOf(
-    "asset:douyin" to R.drawable.ic_douyin,
-    "asset:bilibili" to R.drawable.ic_bilibili,
-    "asset:meituan" to R.drawable.ic_meituan,
-    "asset:xhs" to R.drawable.ic_xhs,
-    "asset:jd" to R.drawable.ic_jd,
-    "asset:taobao" to R.drawable.ic_taobao,
-    "asset:pdd" to R.drawable.ic_pdd,
-    "builtin:search" to R.drawable.ic_search,
-    "builtin:shopping" to R.drawable.ic_shopping,
-    "builtin:play" to R.drawable.ic_play,
-    "builtin:note" to R.drawable.ic_note,
-    "builtin:web" to R.drawable.ic_web,
-    "mdi:magnify" to R.drawable.ic_search,
-    "mdi:shopping-outline" to R.drawable.ic_shopping,
-    "mdi:food-fork-drink" to R.drawable.ic_search,
-    "mdi:play-circle-outline" to R.drawable.ic_play,
-    "mdi:note-text-outline" to R.drawable.ic_note,
-    "mdi:book-open-page-variant-outline" to R.drawable.ic_note,
-    "mdi:earth" to R.drawable.ic_web
+  const val DEFAULT_BUILTIN_ICON_VALUE = "douyin.png"
+
+  private val legacyBuiltinAliases = mapOf(
+    "asset:douyin" to "douyin.png",
+    "asset:bilibili" to "bilibili.png",
+    "asset:meituan" to "meituan.png",
+    "asset:xhs" to "xhs.png",
+    "asset:jd" to "jd.png",
+    "asset:taobao" to "taobao.png",
+    "asset:pdd" to "pdd.png",
+    "builtin:search" to "search.svg",
+    "builtin:shopping" to "shopping.svg",
+    "builtin:play" to "play.svg",
+    "builtin:note" to "note.svg",
+    "builtin:web" to "web.svg",
+    "mdi:magnify" to "search.svg",
+    "mdi:shopping-outline" to "shopping.svg",
+    "mdi:food-fork-drink" to "search.svg",
+    "mdi:play-circle-outline" to "play.svg",
+    "mdi:note-text-outline" to "note.svg",
+    "mdi:book-open-page-variant-outline" to "note.svg",
+    "mdi:earth" to "web.svg"
   )
+  private val builtinAssetCache = object : LruCache<String, Bitmap>(BUILTIN_CACHE_BYTES) {
+    override fun sizeOf(key: String, value: Bitmap): Int = value.byteCount
+  }
 
   fun loadInto(imageView: ImageView, target: SearchTarget) {
     imageView.scaleType = ImageView.ScaleType.CENTER_INSIDE
@@ -39,7 +49,7 @@ object IconLoader {
 
     when (target.iconMode) {
       IconModes.BUILTIN -> {
-        imageView.setImageResource(builtinResource(target.iconValue))
+        loadBuiltinInto(imageView, target.iconValue)
       }
 
       IconModes.INSTALLED_APP -> {
@@ -82,8 +92,79 @@ object IconLoader {
     return runCatching { context.packageManager.getApplicationIcon(packageName) }.getOrNull()
   }
 
-  fun builtinResource(iconValue: String): Int {
-    return builtinResources[iconValue] ?: R.drawable.ic_search
+  fun listBuiltinIconValues(context: Context): List<String> {
+    return runCatching {
+      context.assets.list(BUILTIN_ASSET_DIRECTORY).orEmpty()
+        .filter(::isBuiltinAssetFile)
+        .sortedBy { it.lowercase(Locale.ROOT) }
+    }.getOrDefault(emptyList())
+  }
+
+  fun loadBuiltinInto(imageView: ImageView, iconValue: String) {
+    imageView.scaleType = ImageView.ScaleType.CENTER_INSIDE
+    val assetFileName = legacyBuiltinAliases[iconValue] ?: iconValue
+    val bitmap = loadBuiltinAssetBitmap(imageView.context, assetFileName)
+    if (bitmap != null) {
+      imageView.setImageBitmap(bitmap)
+    } else {
+      imageView.setImageResource(R.drawable.ic_search)
+    }
+  }
+
+  private fun loadBuiltinAssetBitmap(context: Context, fileName: String): Bitmap? {
+    if (!isBuiltinAssetFile(fileName)) return null
+    builtinAssetCache.get(fileName)?.let { return it }
+
+    val assetPath = "$BUILTIN_ASSET_DIRECTORY/$fileName"
+    val bitmap = runCatching {
+      if (fileName.endsWith(".svg", ignoreCase = true)) {
+        loadBuiltinSvgBitmap(context, assetPath)
+      } else {
+        loadBuiltinRasterBitmap(context, assetPath)
+      }
+    }.getOrNull()
+
+    if (bitmap != null) builtinAssetCache.put(fileName, bitmap)
+    return bitmap
+  }
+
+  private fun loadBuiltinRasterBitmap(context: Context, assetPath: String): Bitmap? {
+    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+    context.assets.open(assetPath).use { input ->
+      BitmapFactory.decodeStream(input, null, bounds)
+    }
+    if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+
+    val sampleSize = calculateSampleSize(
+      bounds.outWidth,
+      bounds.outHeight,
+      MAX_ICON_BITMAP_SIZE
+    )
+    return context.assets.open(assetPath).use { input ->
+      BitmapFactory.decodeStream(
+        input,
+        null,
+        BitmapFactory.Options().apply { inSampleSize = sampleSize }
+      )
+    }
+  }
+
+  private fun loadBuiltinSvgBitmap(context: Context, assetPath: String): Bitmap? {
+    val svg = context.assets.open(assetPath).use(SVG::getFromInputStream)
+    val bitmap = Bitmap.createBitmap(
+      MAX_ICON_BITMAP_SIZE,
+      MAX_ICON_BITMAP_SIZE,
+      Bitmap.Config.ARGB_8888
+    )
+    svg.renderToCanvas(Canvas(bitmap))
+    return bitmap
+  }
+
+  private fun isBuiltinAssetFile(fileName: String): Boolean {
+    if (fileName.contains('/') || fileName.contains('\\')) return false
+    return SUPPORTED_BUILTIN_EXTENSIONS.any { extension ->
+      fileName.endsWith(extension, ignoreCase = true)
+    }
   }
 
   private fun loadGalleryBitmap(context: Context, value: String) = runCatching {
@@ -117,4 +198,7 @@ object IconLoader {
   }
 
   private const val MAX_ICON_BITMAP_SIZE = 256
+  private const val BUILTIN_ASSET_DIRECTORY = "builtin-icons"
+  private const val BUILTIN_CACHE_BYTES = 4 * 1024 * 1024
+  private val SUPPORTED_BUILTIN_EXTENSIONS = setOf(".png", ".webp", ".jpg", ".jpeg", ".svg")
 }

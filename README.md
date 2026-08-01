@@ -16,6 +16,7 @@
 ## 项目结构
 
 - `native-android/`：Kotlin 原生 Android 项目，使用 XML Views 和 ViewBinding
+- `native-android/app/src/main/assets/builtin-icons/`：自动扫描的内置图片图标目录
 - `.toolchains/`：项目本地 JDK、Android SDK 和构建缓存，仅提交目录说明
 - `setup-dev.ps1`：Windows 开发环境一键初始化脚本
 - `build-debug.bat`：无需发布签名的 Debug APK 构建入口
@@ -94,6 +95,26 @@ builds/i-find-native-arm64-v8a-debug.apk
 ```
 
 Debug 版包名为 `com.cgl.ifind.debug`，可以和正式版同时安装。
+
+## 添加内置图标
+
+把图片直接放入以下目录即可：
+
+```text
+native-android/app/src/main/assets/builtin-icons/
+```
+
+支持 `.png`、`.webp`、`.jpg`、`.jpeg` 和 `.svg`。应用构建后会自动扫描该目录，并在内置图标选择器中以每行五个图标显示。
+
+文件名就是图标的唯一 Key，例如：
+
+```text
+zhihu.webp
+```
+
+保存到搜索项中的 `iconValue` 也会直接使用 `zhihu.webp`。不需要编辑 Kotlin 映射、不需要 JSON 配置，也不会在图标选择器中显示文件名或额外文字。文件名不要重复，建议使用简短的英文小写名称以方便跨平台维护。
+
+旧版本使用的 `asset:douyin` 等矢量图标 Key 仍保留兼容，不会影响已经保存的搜索项。
 
 ## 使用 Android Studio
 

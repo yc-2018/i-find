@@ -1,12 +1,13 @@
 package com.cgl.ifind.ui
 
 import android.content.Context
+import android.view.ViewGroup
 import android.widget.GridLayout
+import android.widget.ScrollView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.AppCompatImageButton
 import com.cgl.ifind.R
-import com.cgl.ifind.data.DefaultTargets
 import com.cgl.ifind.util.IconLoader
 
 object BuiltinIconPickerDialog {
@@ -20,9 +21,19 @@ object BuiltinIconPickerDialog {
       columnCount = COLUMN_COUNT
       setPadding(horizontalPadding, horizontalPadding, horizontalPadding, horizontalPadding)
     }
+    val scrollView = ScrollView(context).apply {
+      isFillViewport = true
+      addView(
+        grid,
+        ViewGroup.LayoutParams(
+          ViewGroup.LayoutParams.MATCH_PARENT,
+          ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+      )
+    }
 
     lateinit var dialog: AlertDialog
-    DefaultTargets.builtinIconChoices.forEach { choice ->
+    IconLoader.listBuiltinIconValues(context).forEach { iconValue ->
       val button = AppCompatImageButton(context).apply {
         layoutParams = GridLayout.LayoutParams().apply {
           width = cellSize
@@ -30,8 +41,8 @@ object BuiltinIconPickerDialog {
           setMargins(itemMargin, itemMargin, itemMargin, itemMargin)
         }
         background = AppCompatResources.getDrawable(context, R.drawable.bg_icon_choice)
-        contentDescription = choice.label
-        isSelected = choice.key == selectedIconValue
+        contentDescription = context.getString(R.string.icon_preview)
+        isSelected = iconValue == selectedIconValue
         scaleType = android.widget.ImageView.ScaleType.CENTER_INSIDE
         setPadding(
           (12 * density).toInt(),
@@ -39,9 +50,9 @@ object BuiltinIconPickerDialog {
           (12 * density).toInt(),
           (12 * density).toInt()
         )
-        setImageResource(IconLoader.builtinResource(choice.key))
+        IconLoader.loadBuiltinInto(this, iconValue)
         setOnClickListener {
-          onSelected(choice.key)
+          onSelected(iconValue)
           dialog.dismiss()
         }
       }
@@ -50,7 +61,7 @@ object BuiltinIconPickerDialog {
 
     dialog = AlertDialog.Builder(context)
       .setTitle(R.string.builtin_icons)
-      .setView(grid)
+      .setView(scrollView)
       .setNegativeButton(R.string.cancel, null)
       .create()
     dialog.show()
