@@ -1,0 +1,32 @@
+{
+  "cli": {
+    "version": ">= 16.32.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "credentialsSource": "local"
+    },
+    "preview-arm64": {
+      "distribution": "internal",
+      "env": {
+        "BUILD_ARCHS": "arm64-v8a",
+        "ORG_GRADLE_PROJECT_reactNativeArchitectures": "arm64-v8a"
+      },
+      "android": {
+        "buildType": "apk"
+      },
+      "credentialsSource": "local"
+    },
+    "production": {
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "credentialsSource": "local"
+    }
+  }
+}

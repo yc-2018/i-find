@@ -1,0 +1,12 @@
+.expo/
+.git/
+builds/
+dist/
+node_modules/
+unpackage/
+web-build/
+android/keystores/
+*.apk
+*.aab
+*.hprof
+npm-debug.*

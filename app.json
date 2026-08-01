@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "I find",
+    "slug": "i-find",
+    "scheme": "ifind",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./logo.png",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "splash": {
+      "image": "./logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#f2ecdd"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.cgl.ifind"
+    },
+    "android": {
+      "package": "com.cgl.ifind",
+      "adaptiveIcon": {
+        "foregroundImage": "./logo.png",
+        "backgroundColor": "#f2ecdd"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "\u5141\u8bb8 I find \u8bfb\u53d6\u76f8\u518c\u56fe\u7247\u4f5c\u4e3a\u641c\u7d22\u56fe\u6807\u3002"
+        }
+      ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "5515ae16-378f-4ec2-bb54-7f2d247c2b2b"
+      }
+    },
+    "owner": "yc556"
+  }
+}

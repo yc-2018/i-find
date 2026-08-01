@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>哈?哦!</title>
+  <style>
+      * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+          font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      }
+
+      body {
+          color: #333;
+          line-height: 1.6;
+          padding: 20px 15px;
+          margin: 0 auto;
+      }
+
+      #apps-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 15px;
+      }
+
+      .app-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          background: white;
+          border-radius: 12px;
+          padding: 10px 5px;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+          transition: all 0.2s ease;
+          gap: 3px;
+      }
+
+      .app-item:active {
+          transform: scale(0.90);
+          box-shadow: inset 2px 2px 6px rgba(0, 0, 0, 0.05);
+      }
+
+      .app-item .app-label {
+          font-size: 12px;
+          text-align: center;
+          color: #546e7a;
+      }
+
+      .search-container {
+          margin: 25px 0 15px;
+          background: white;
+          border-radius: 50px;
+          padding: 5px 20px;
+          display: flex;
+          align-items: center;
+          box-shadow: 0 4px 5px rgba(0, 0, 0, 0.08);
+      }
+
+      #search-input {
+          flex: 1;
+          border: none;
+          outline: none;
+          padding: 15px 0;
+          font-size: 16px;
+          background: transparent;
+      }
+
+      #iKunFocus {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          top: 0;
+          left: 0;
+          z-index: -1;
+      }
+
+      .toast {
+          position: fixed;
+          bottom: 30px;
+          left: 50%;
+          transform: translateX(-50%) translateY(100px);
+          background: rgba(0, 0, 0, 0.8);
+          color: white;
+          padding: 12px 25px;
+          border-radius: 50px;
+          font-size: 14px;
+          opacity: 0;
+          transition: all 0.3s ease;
+          z-index: 1000;
+      }
+
+      ::placeholder {
+          color: #ccc;
+          font-style: italic;
+      }
+
+
+      .toast.show {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+      }
+
+      @media (max-width: 400px) {
+          .apps-grid {
+              grid-template-columns: repeat(4, 1fr);
+              gap: 12px;
+          }
+
+          .app-item {
+              padding: 12px 5px;
+          }
+
+          .app-item .app-label {
+              font-size: 11px;
+          }
+      }
+  </style>
+</head>
+<body>
+
+<div id="main" style="padding: 1rem;">
+  <div id="iKunFocus"></div>
+  <div id="apps-grid"> <!-- 各个搜索项 插槽 --></div>
+
+  <div class="search-container">
+    <img style="position: relative;top:1px;" src="./icon/magnifier.svg" width="18px" alt="">&nbsp;
+    <input type="text" id="search-input" placeholder="随念而搜...">
+  </div>
+</div>
+
+<div class="toast" id="toast">请先输入搜索内容</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+
+    const appsGrid = document.getElementById('apps-grid');
+    appsGrid.innerHTML = [
+      {
+        name: '抖音',
+        icon: './icon/douyin.svg',
+        scheme: 'snssdk1128://search?keyword={keyword}&search_type=user'
+      },
+      {
+        name: 'B站',
+        icon: './icon/bilibili.svg',
+        scheme: 'bilibili://search/?keyword={keyword}'
+      },
+      {
+        name: '美团',
+        icon: './icon/meituan.svg',
+        scheme: 'imeituan://www.meituan.com/search/result?q={keyword}'
+      },
+      {
+        name: '小红书',
+        icon: './icon/xhs.svg',
+        scheme: 'xhsdiscover://search/result?keyword={keyword}'
+      },
+      {
+        name: '京东',
+        icon: './icon/jd.svg',
+        scheme: 'openapp.jdmobile://virtual?params={"des":"productList","keyWord":"{keyword}","from":"search","category":"jump"}'
+      },
+      {
+        name: '淘宝',
+        icon: './icon/taobao.svg',
+        scheme: 'tbopen://m.taobao.com/tbopen/index.html?h5Url=https://s.taobao.com/search?q={keyword}'
+      },
+      {
+        name: '拼多多',
+        icon: './icon/pdd.svg',
+        scheme: 'pinduoduo://com.xunmeng.pinduoduo/search_result.html?search_key={keyword}'
+      },{
+        name: '',
+        icon: '',
+        scheme: 'https://www.baidu.com/s?wd={keyword}'
+      },
+    ].map(item => `
+      <div class="app-item" data-scheme='${item.scheme}'> <!-- 这里单引号非常重要 就因为京东url里面有双引号-->
+      <img src="${item.icon}" alt="" height="22px">
+        <span class="app-label">${item.name}</span>
+      </div>
+  `).join('');
+
+    const searchInput = document.getElementById('search-input');
+    const toast = document.getElementById('toast');
+    const bgFocus = document.getElementById('iKunFocus');
+
+    // 进来就聚焦输入框 输入框弹不出来还得慢一点点// 移动端压根不支持进来就聚焦，必须有动作才能聚焦
+    window.setTimeout(() => searchInput.focus(), 500)
+
+    // 显示提示信息
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2000);
+    }
+
+    // 监听 点击背景也聚焦到输入框
+    bgFocus.addEventListener('click', () => searchInput.focus());
+
+    // 监听 点击了哪个搜索呢？
+    appsGrid.addEventListener('click', function (e) {
+      const target = e.target.closest('.app-item');
+      if (target) {
+        const keyword = searchInput.value.trim();
+        if (!keyword) {
+          showToast('仰晨:请先输入搜索内容');
+          searchInput.focus();
+          return;
+        }
+        window.location.href = target.dataset.scheme.replace('{keyword}', encodeURIComponent(keyword));
+      }
+    });
+
+    // 按回车键触发搜索
+    searchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') showToast('请直接点击应用进行搜索')
+    });
+  });
+</script>
+</body>
+</html>
