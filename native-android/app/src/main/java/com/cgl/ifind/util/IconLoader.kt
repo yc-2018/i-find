@@ -13,7 +13,6 @@ import com.cgl.ifind.data.IconModes
 import com.cgl.ifind.data.SearchTarget
 import com.caverock.androidsvg.SVG
 import java.io.File
-import java.util.Locale
 
 object IconLoader {
   const val DEFAULT_BUILTIN_ICON_VALUE = "douyin.png"
@@ -42,6 +41,9 @@ object IconLoader {
   private val builtinAssetCache = object : LruCache<String, Bitmap>(BUILTIN_CACHE_BYTES) {
     override fun sizeOf(key: String, value: Bitmap): Int = value.byteCount
   }
+
+  @Volatile
+  private var builtinAssets: List<BuiltinIconAsset>? = null
 
   fun loadInto(imageView: ImageView, target: SearchTarget) {
     imageView.scaleType = ImageView.ScaleType.CENTER_INSIDE
@@ -93,16 +95,16 @@ object IconLoader {
   }
 
   fun listBuiltinIconValues(context: Context): List<String> {
-    return runCatching {
-      context.assets.list(BUILTIN_ASSET_DIRECTORY).orEmpty()
-        .filter(::isBuiltinAssetFile)
-        .sortedBy { it.lowercase(Locale.ROOT) }
-    }.getOrDefault(emptyList())
+    return BuiltinIconAssetCatalog.selectableIconValues(getBuiltinAssets(context))
   }
 
   fun loadBuiltinInto(imageView: ImageView, iconValue: String) {
     imageView.scaleType = ImageView.ScaleType.CENTER_INSIDE
-    val assetFileName = legacyBuiltinAliases[iconValue] ?: iconValue
+    val compatibleIconValue = legacyBuiltinAliases[iconValue] ?: iconValue
+    val assetFileName = BuiltinIconAssetCatalog.resolveFileName(
+      getBuiltinAssets(imageView.context),
+      compatibleIconValue
+    ) ?: compatibleIconValue
     val bitmap = loadBuiltinAssetBitmap(imageView.context, assetFileName)
     if (bitmap != null) {
       imageView.setImageBitmap(bitmap)
@@ -112,7 +114,7 @@ object IconLoader {
   }
 
   private fun loadBuiltinAssetBitmap(context: Context, fileName: String): Bitmap? {
-    if (!isBuiltinAssetFile(fileName)) return null
+    if (!BuiltinIconAssetCatalog.isSupportedFileName(fileName)) return null
     builtinAssetCache.get(fileName)?.let { return it }
 
     val assetPath = "$BUILTIN_ASSET_DIRECTORY/$fileName"
@@ -160,10 +162,14 @@ object IconLoader {
     return bitmap
   }
 
-  private fun isBuiltinAssetFile(fileName: String): Boolean {
-    if (fileName.contains('/') || fileName.contains('\\')) return false
-    return SUPPORTED_BUILTIN_EXTENSIONS.any { extension ->
-      fileName.endsWith(extension, ignoreCase = true)
+  private fun getBuiltinAssets(context: Context): List<BuiltinIconAsset> {
+    builtinAssets?.let { return it }
+    return synchronized(this) {
+      builtinAssets ?: runCatching {
+        BuiltinIconAssetCatalog.build(
+          context.assets.list(BUILTIN_ASSET_DIRECTORY).orEmpty().asIterable()
+        )
+      }.getOrDefault(emptyList()).also { builtinAssets = it }
     }
   }
 
@@ -200,5 +206,4 @@ object IconLoader {
   private const val MAX_ICON_BITMAP_SIZE = 256
   private const val BUILTIN_ASSET_DIRECTORY = "builtin-icons"
   private const val BUILTIN_CACHE_BYTES = 4 * 1024 * 1024
-  private val SUPPORTED_BUILTIN_EXTENSIONS = setOf(".png", ".webp", ".jpg", ".jpeg", ".svg")
 }

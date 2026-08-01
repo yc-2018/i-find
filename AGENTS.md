@@ -6,7 +6,7 @@
 
 - 应用名称：`I find`
 - Android 包名：`com.cgl.ifind`
-- 当前版本：`2.3.1`（`versionCode = 6`）
+- 当前版本：`2.3.2`（`versionCode = 7`）
 - 当前实现：Kotlin + XML Views + ViewBinding
 - 当前主项目：`native-android/`
 - 最低 Android：API 26
@@ -77,7 +77,7 @@
 - `generated`
 - `remote`
 
-新增内置图片图标时，只把 `.png`、`.webp`、`.jpg`、`.jpeg` 或 `.svg` 文件放入 `app/src/main/assets/builtin-icons/`。文件名就是稳定的 `iconValue`，选择器只显示图标，不显示文件名或人为标签。不要为目录图标新增 JSON 清单、名称映射或逐项 Kotlin 注册。
+新增内置图片图标时，只把 `.png`、`.webp`、`.jpg`、`.jpeg` 或 `.svg` 文件放入 `app/src/main/assets/builtin-icons/`。可用 `数字_文件名` 控制顺序，例如 `06_douyin.png`；数字按整数比较，未编号图标排在编号图标之后。数字前缀不属于 `iconValue`，实际稳定 Key 仍是 `douyin.png`，因此只修改编号不会破坏已有数据。编号后面的文件名必须唯一。选择器只显示图标，不显示文件名或人为标签。不要为目录图标新增 JSON 清单、名称映射或逐项 Kotlin 注册。
 
 保留 `IconLoader` 中旧 `asset:*`、`builtin:*` 和 `mdi:*` 资源映射，用于兼容已有本地数据。新增目录图标不得删除或覆盖这些旧键的加载能力。
 
