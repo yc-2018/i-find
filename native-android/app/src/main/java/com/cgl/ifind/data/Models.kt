@@ -41,11 +41,8 @@ data class SearchTarget(
         return null
       }
 
-      val primaryTemplate = json.optNullableString("primaryTemplate")
-        ?: migrateLegacyPrimaryTemplate(json)
-        ?: return null
+      val primaryTemplate = json.optNullableString("primaryTemplate") ?: return null
       val fallbackTemplate = json.optNullableString("fallbackTemplate")
-        ?: migrateLegacyFallbackTemplate(json, primaryTemplate)
 
       return SearchTarget(
         id = id,
@@ -60,26 +57,6 @@ data class SearchTarget(
       )
     }
 
-    private fun migrateLegacyPrimaryTemplate(json: JSONObject): String? {
-      val legacyScheme = json.optNullableString("schemeTemplate")
-      val legacyWeb = json.optNullableString("webFallbackTemplate")
-      return if (json.optString("launchMode") == LEGACY_SCHEME_FIRST) {
-        legacyScheme ?: legacyWeb
-      } else {
-        legacyWeb ?: legacyScheme
-      }
-    }
-
-    private fun migrateLegacyFallbackTemplate(
-      json: JSONObject,
-      primaryTemplate: String
-    ): String? {
-      if (json.optString("launchMode") != LEGACY_SCHEME_FIRST) return null
-      return json.optNullableString("webFallbackTemplate")
-        ?.takeIf { it != primaryTemplate }
-    }
-
-    private const val LEGACY_SCHEME_FIRST = "schemeFirst"
   }
 }
 

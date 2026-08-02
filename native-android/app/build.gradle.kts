@@ -11,8 +11,8 @@ android {
     applicationId = "com.cgl.ifind"
     minSdk = 26
     targetSdk = 35
-    versionCode = 8
-    versionName = "2.3.3"
+    versionCode = 9
+    versionName = "2.3.4"
 
     vectorDrawables {
       useSupportLibrary = true

@@ -6,7 +6,7 @@
 
 - 应用名称：`I find`
 - Android 包名：`com.cgl.ifind`
-- 当前版本：`2.3.3`（`versionCode = 8`）
+- 当前版本：`2.3.4`（`versionCode = 9`）
 - 当前实现：Kotlin + XML Views + ViewBinding
 - 当前主项目：`native-android/`
 - 最低 Android：API 26
@@ -50,7 +50,7 @@
 
 搜索链接必须使用 `{keyword}` 作为占位符。启动搜索时通过 `Uri.encode` 编码关键词，先打开主链接，主链接不可用时再打开备用链接。
 
-不要直接删除 `Models.kt` 中针对旧字段 `launchMode`、`schemeTemplate` 和 `webFallbackTemplate` 的读取迁移逻辑。已经安装过 Expo 版或旧原生版的用户依赖这些迁移保持数据可用。
+`Models.kt` 只读取当前数据字段，不为旧版本的 `launchMode`、`schemeTemplate`、`webFallbackTemplate` 或其他历史字段添加兼容迁移。
 
 ### 排序和持久化
 
@@ -115,7 +115,7 @@ Shizuku 功能是可选增强，不能成为普通搜索的前置条件。
 - 优先使用现有 AndroidX 依赖和平台 API，不为简单功能引入大型库。
 - 保持 Activity/Adapter/Store 的现有职责边界；不要把持久化或网络逻辑塞进 ViewHolder。
 - 只为不直观的复杂逻辑添加简短注释。
-- 修改数据模型时必须同时检查默认数据、编辑页、持久化、旧数据迁移和搜索启动流程。
+- 修改数据模型时必须同时检查默认数据、编辑页、持久化和搜索启动流程。
 - 不要无故修改应用包名、签名配置、版本号、最低 SDK 或 ABI 策略。
 
 ## 构建与验证

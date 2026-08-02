@@ -1,9 +1,7 @@
 package com.cgl.ifind.data
 
 import android.content.Context
-import android.database.sqlite.SQLiteDatabase
 import org.json.JSONArray
-import org.json.JSONObject
 import java.io.File
 import java.time.LocalDate
 import java.time.ZoneId
@@ -13,7 +11,6 @@ class AppStore(private val context: Context) {
   private val preferences = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
 
   init {
-    migrateLegacyExpoDataIfNeeded()
     if (!preferences.contains(KEY_TARGETS)) {
       saveTargets(DefaultTargets.create())
     }
@@ -200,14 +197,7 @@ class AppStore(private val context: Context) {
 
   private fun normalizeTargets(targets: List<SearchTarget>): List<SearchTarget> {
     return targets.sortedBy { it.sortOrder }.mapIndexed { index, target ->
-      val builtinPackageName = DefaultTargets.create()
-        .firstOrNull { it.id == target.id }
-        ?.androidPackageName
-
-      target.copy(
-        androidPackageName = target.androidPackageName ?: builtinPackageName,
-        sortOrder = index
-      )
+      target.copy(sortOrder = index)
     }
   }
 
@@ -217,65 +207,6 @@ class AppStore(private val context: Context) {
     if (targetFile.path.startsWith(iconRoot.path + File.separator)) {
       targetFile.delete()
     }
-  }
-
-  private fun migrateLegacyExpoDataIfNeeded() {
-    if (preferences.getBoolean(KEY_LEGACY_MIGRATED, false)) {
-      return
-    }
-
-    readLegacyAsyncStorageValue("ifind-search-targets")?.let { rawTargets ->
-      runCatching {
-        val array = JSONArray(rawTargets)
-        val targets = buildList {
-          for (index in 0 until array.length()) {
-            SearchTarget.fromJson(array.getJSONObject(index))?.let(::add)
-          }
-        }
-        if (targets.isNotEmpty()) {
-          val normalized = normalizeTargets(targets)
-          val nativeArray = JSONArray()
-          normalized.forEach { nativeArray.put(it.toJson()) }
-          preferences.edit().putString(KEY_TARGETS, nativeArray.toString()).apply()
-        }
-      }
-    }
-
-    readLegacyAsyncStorageValue("ifind-stopapp-settings")?.let { rawSettings ->
-      runCatching {
-        val settings = JSONObject(rawSettings)
-        preferences.edit()
-          .putBoolean(KEY_AUTO_DEFROST, settings.optBoolean("autoDefrostEnabled", false))
-          .apply()
-      }
-    }
-
-    preferences.edit().putBoolean(KEY_LEGACY_MIGRATED, true).apply()
-  }
-
-  private fun readLegacyAsyncStorageValue(key: String): String? {
-    val candidateFiles = listOf(
-      context.getDatabasePath("RKStorage"),
-      context.getDatabasePath("RKStorage.db")
-    )
-
-    val databaseFile = candidateFiles.firstOrNull { it.exists() } ?: return null
-    return runCatching {
-      SQLiteDatabase.openDatabase(databaseFile.path, null, SQLiteDatabase.OPEN_READONLY).use { database ->
-        database.query(
-          "catalystLocalStorage",
-          arrayOf("value"),
-          "key = ?",
-          arrayOf(key),
-          null,
-          null,
-          null,
-          "1"
-        ).use { cursor ->
-          if (cursor.moveToFirst()) cursor.getString(0) else null
-        }
-      }
-    }.getOrNull()
   }
 
   companion object {
@@ -289,7 +220,6 @@ class AppStore(private val context: Context) {
     private const val KEY_SHOW_TARGET_LABELS = "show_target_labels"
     private const val KEY_HOME_COLUMN_COUNT = "home_column_count"
     private const val KEY_AUTO_DEFROST = "auto_defrost"
-    private const val KEY_LEGACY_MIGRATED = "legacy_expo_migrated"
     private const val MAX_HISTORY_ITEMS = 500
   }
 }
