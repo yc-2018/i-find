@@ -1,6 +1,6 @@
-# I find
+# 搜它
 
-`I find` 是一款使用 Kotlin 和 XML Views 编写的轻量级原生安卓搜索启动器。当前只构建 `arm64-v8a` APK，最低支持 Android 8.0（API 26）。
+`搜它` 是一款使用 Kotlin 和 XML Views 编写的轻量级原生安卓搜索启动器。当前只构建 `arm64-v8a` APK，最低支持 Android 8.0（API 26）。
 
 ## 主要功能
 

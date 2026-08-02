@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">I find</string>
+    <string name="app_name">搜它</string>
     <string name="search_hint">随想随搜…</string>
     <string name="history">历史</string>
     <string name="clear_input">清空输入</string>
@@ -42,7 +42,7 @@
     <string name="shizuku_title">Shizuku 解冻服务</string>
     <string name="refresh_status">刷新状态</string>
     <string name="open_shizuku">打开 Shizuku</string>
-    <string name="grant_permission">授权 I find</string>
+    <string name="grant_permission">授权搜它</string>
     <string name="status_checking">正在检测</string>
     <string name="status_ready">已就绪</string>
     <string name="status_not_installed">未安装</string>
@@ -52,10 +52,10 @@
     <string name="status_ready_detail">自动解冻可用；正常应用直接打开，只在检测到冻结时恢复。</string>
     <string name="status_not_installed_detail">未检测到 Shizuku，请先安装并启动服务。</string>
     <string name="status_service_stopped_detail">Shizuku 已安装，但服务还没有运行。</string>
-    <string name="status_permission_required_detail">Shizuku 服务已运行，请授权 I find。</string>
+    <string name="status_permission_required_detail">Shizuku 服务已运行，请授权搜它。</string>
     <string name="status_unavailable_detail">当前设备无法使用 Shizuku 解冻服务。</string>
     <string name="auto_defrost_not_ready">请先启动 Shizuku 并完成授权</string>
-    <string name="about_app">关于 I find</string>
+    <string name="about_app">关于搜它</string>
     <string name="check_updates_summary">前往 GitHub Release 查看并下载最新版本。</string>
     <string name="app_version_format">当前版本 %1$s</string>
     <string name="app_version_placeholder">当前版本</string>

@@ -4,9 +4,9 @@
 
 ## 项目定位
 
-- 应用名称：`I find`
+- 应用名称：`搜它`
 - Android 包名：`com.cgl.ifind`
-- 当前版本：`2.3.4`（`versionCode = 9`）
+- 当前版本：`2.3.5`（`versionCode = 10`）
 - 当前实现：Kotlin + XML Views + ViewBinding
 - 当前主项目：`native-android/`
 - 最低 Android：API 26
@@ -213,7 +213,7 @@ install-native.bat
 - 推送到 `main` 会自动创建 GitHub Release；提交前确认当前改动适合公开发布。
 - 保持 Release 的 R8 压缩和资源缩减。
 - 使用现有签名升级安装，避免破坏用户本地数据。
-- 校验 APK 包名为 `com.cgl.ifind`、应用名为 `I find`、签名有效，并确认输出元数据为 `arm64-v8a`。
+- 校验 APK 包名为 `com.cgl.ifind`、应用名为 `搜它`、签名有效，并确认输出元数据为 `arm64-v8a`。
 - 不要提交 APK、构建目录、本地 SDK/JDK、凭据或签名密钥。
 
 ## Git 与安全

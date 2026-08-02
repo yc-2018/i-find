@@ -82,7 +82,7 @@ jobs:
 
           TAG="v${VERSION_NAME}-build.${GITHUB_RUN_NUMBER}"
           ASSET_NAME="i-find-v${VERSION_NAME}-arm64-v8a.apk"
-          RELEASE_NAME="I find v${VERSION_NAME} (${VERSION_CODE}) build ${GITHUB_RUN_NUMBER}"
+          RELEASE_NAME="搜它 v${VERSION_NAME} (${VERSION_CODE}) build ${GITHUB_RUN_NUMBER}"
           mkdir -p release
           cp "$SOURCE_APK" "release/$ASSET_NAME"
 
