@@ -1,6 +1,57 @@
+import java.math.BigInteger
+import java.util.Locale
+
 plugins {
   id("com.android.application")
   id("org.jetbrains.kotlin.android")
+}
+
+val builtinIconDirectory = layout.projectDirectory.dir("src/main/assets/builtin-icons")
+val supportedBuiltinIconExtensions = setOf(".png", ".webp", ".jpg", ".jpeg", ".svg")
+val builtinIconOrderPrefix = Regex("^(\\d+)_(.+)$")
+
+tasks.register("verifyBuiltinIconKeys") {
+  group = "verification"
+  description = "Fails when built-in icons have duplicate stable keys."
+  inputs.dir(builtinIconDirectory)
+
+  doLast {
+    val duplicateKeys = builtinIconDirectory.asFile
+      .listFiles()
+      .orEmpty()
+      .asSequence()
+      .filter { it.isFile }
+      .map { it.name }
+      .filter { fileName ->
+        supportedBuiltinIconExtensions.any { extension ->
+          fileName.endsWith(extension, ignoreCase = true)
+        }
+      }
+      .groupBy { fileName ->
+        val prefixMatch = builtinIconOrderPrefix.matchEntire(fileName)
+        val order = prefixMatch?.groupValues?.get(1)
+        val keyCandidate = prefixMatch?.groupValues?.get(2)
+        val hasValidPrefix = order != null &&
+          keyCandidate != null &&
+          supportedBuiltinIconExtensions.any { extension ->
+            keyCandidate.endsWith(extension, ignoreCase = true)
+          } &&
+          runCatching { BigInteger(order) }.isSuccess
+        (if (hasValidPrefix) keyCandidate.orEmpty() else fileName).lowercase(Locale.ROOT)
+      }
+      .filterValues { it.size > 1 }
+
+    check(duplicateKeys.isEmpty()) {
+      val conflicts = duplicateKeys.values.joinToString("; ") { files ->
+        files.joinToString(", ")
+      }
+      "Duplicate built-in icon keys. Use a unique filename after the optional numeric prefix: $conflicts"
+    }
+  }
+}
+
+tasks.named("preBuild") {
+  dependsOn("verifyBuiltinIconKeys")
 }
 
 android {
@@ -11,8 +62,8 @@ android {
     applicationId = "com.cgl.ifind"
     minSdk = 26
     targetSdk = 35
-    versionCode = 11
-    versionName = "2.3.6"
+    versionCode = 12
+    versionName = "2.3.7"
 
     vectorDrawables {
       useSupportLibrary = true

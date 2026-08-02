@@ -11,15 +11,17 @@ internal data class BuiltinIconAsset(
 
 internal object BuiltinIconAssetCatalog {
   fun build(fileNames: Iterable<String>): List<BuiltinIconAsset> {
-    return fileNames.asSequence()
+    val assets = fileNames.asSequence()
       .filter(::isSupportedFileName)
       .map(::parse)
       .sortedWith(assetComparator)
       .toList()
+    requireUniqueIconValues(assets)
+    return assets
   }
 
   fun selectableIconValues(assets: List<BuiltinIconAsset>): List<String> {
-    return assets.distinctBy { it.iconValue.lowercase(Locale.ROOT) }.map { it.iconValue }
+    return assets.map { it.iconValue }
   }
 
   fun resolveFileName(assets: List<BuiltinIconAsset>, iconValue: String): String? {
@@ -49,6 +51,19 @@ internal object BuiltinIconAssetCatalog {
 
   private fun parseOrder(value: String): BigInteger? {
     return runCatching { BigInteger(value) }.getOrNull()
+  }
+
+  private fun requireUniqueIconValues(assets: List<BuiltinIconAsset>) {
+    val duplicateValues = assets
+      .groupBy { it.iconValue.lowercase(Locale.ROOT) }
+      .filterValues { it.size > 1 }
+      .values
+      .map { duplicateAssets ->
+        duplicateAssets.joinToString(", ") { it.fileName }
+      }
+    require(duplicateValues.isEmpty()) {
+      "Duplicate built-in icon keys: ${duplicateValues.joinToString("; ")}"
+    }
   }
 
   private val assetComparator = Comparator<BuiltinIconAsset> { left, right ->

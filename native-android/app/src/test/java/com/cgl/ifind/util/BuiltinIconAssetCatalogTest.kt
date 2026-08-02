@@ -56,13 +56,10 @@ class BuiltinIconAssetCatalogTest {
     assertNull(BuiltinIconAssetCatalog.resolveFileName(assets, "01_douyin.png"))
   }
 
-  @Test
-  fun duplicateStableKeysUseTheEarlierSortedFile() {
-    val assets = BuiltinIconAssetCatalog.build(
-      listOf("20_same.png", "10_same.png")
+  @Test(expected = IllegalArgumentException::class)
+  fun duplicateStableKeysAreRejected() {
+    BuiltinIconAssetCatalog.build(
+      listOf("01_douyin.png", "douyin.png", "011_douyin.png")
     )
-
-    assertEquals(listOf("same.png"), BuiltinIconAssetCatalog.selectableIconValues(assets))
-    assertEquals("10_same.png", BuiltinIconAssetCatalog.resolveFileName(assets, "same.png"))
   }
 }
