@@ -131,6 +131,8 @@ object IconLoader {
 
   private fun loadBuiltinSvgBitmap(context: Context, assetPath: String): Bitmap? {
     val svg = context.assets.open(assetPath).use(SVG::getFromInputStream)
+    svg.setDocumentWidth(MAX_ICON_BITMAP_SIZE.toFloat())
+    svg.setDocumentHeight(MAX_ICON_BITMAP_SIZE.toFloat())
     val bitmap = Bitmap.createBitmap(
       MAX_ICON_BITMAP_SIZE,
       MAX_ICON_BITMAP_SIZE,

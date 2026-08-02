@@ -20,6 +20,7 @@
 - `.toolchains/`：项目本地 JDK、Android SDK 和构建缓存，仅提交目录说明
 - `setup-dev.ps1`：Windows 开发环境一键初始化脚本
 - `build-debug.bat`：无需发布签名的 Debug APK 构建入口
+- `install-debug.bat`：构建并安装 Debug 测试版到 USB 设备
 - `build-native.bat`：使用私有签名构建 Release APK
 - `install-native.bat`：安装已构建的 Release APK 到 USB 设备
 - `.github/workflows/android-release.yml`：推送 `main` 后自动构建和发布
@@ -96,6 +97,18 @@ builds/i-find-native-arm64-v8a-debug.apk
 
 Debug 版包名为 `com.cgl.ifind.debug`，可以和正式版同时安装。
 
+连接已开启 USB 调试并完成授权的安卓手机后，可以直接构建并安装 Debug 测试版：
+
+```powershell
+.\build-local.ps1 -Debug -Install
+```
+
+也可以双击：
+
+```text
+install-debug.bat
+```
+
 ## 添加内置图标
 
 把图片直接放入以下目录即可：
@@ -109,14 +122,14 @@ native-android/app/src/main/assets/builtin-icons/
 可以直接使用文件名，也可以在文件名前加“数字 + 下划线”控制排序，例如：
 
 ```text
-06_zhihu.webp
-050_weibo.svg
+100_zhihu.webp
+500_weibo.svg
 douban.png
 ```
 
-编号按整数比较，不按文字逐位比较，因此 `06_` 会排在 `050_` 前面。没有编号的文件统一排在所有编号文件之后，再按文件名排序。
+编号按整数比较，不按文字逐位比较，因此 `100_` 会排在 `500_` 前面。没有编号的文件统一排在所有编号文件之后，再按文件名排序。
 
-数字前缀只负责排序，不会保存到搜索项数据。`06_zhihu.webp` 对应的稳定 `iconValue` 是 `zhihu.webp`；以后改成 `20_zhihu.webp` 只会改变显示顺序，已经安装的 App 仍能读取原图标。编号后面的文件名必须保持唯一。
+数字前缀只负责排序，不会保存到搜索项数据。`100_zhihu.webp` 对应的稳定 `iconValue` 是 `zhihu.webp`；以后改成 `300_zhihu.webp` 只会改变显示顺序，已经安装的 App 仍能读取原图标。编号后面的文件名必须保持唯一。
 
 不需要编辑 Kotlin 映射、不需要 JSON 配置，也不会在图标选择器中显示文件名或额外文字。建议使用简短的英文小写名称以方便跨平台维护。
 
@@ -271,3 +284,7 @@ fork 不会继承原仓库的 Secrets。其他维护者如果需要自动发布�
 ## 许可证与依赖
 
 项目通过 Gradle 使用 AndroidX 和 Shizuku 等第三方依赖。第三方组件仍适用其各自的开源许可证。
+
+## 数据来源与致谢
+
+部分应用搜索链接参考了 [pawaovo/moment-app-configs](https://github.com/pawaovo/moment-app-configs) 项目提供的 [app_schemes.json](https://github.com/pawaovo/moment-app-configs/blob/main/app_schemes.json)，感谢原项目作者整理和公开这些配置。

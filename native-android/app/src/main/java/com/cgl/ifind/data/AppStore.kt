@@ -14,6 +14,7 @@ class AppStore(private val context: Context) {
     if (!preferences.contains(KEY_TARGETS)) {
       saveTargets(DefaultTargets.create())
     }
+    migrateDefaultTargetsIfNeeded()
   }
 
   @Synchronized
@@ -201,6 +202,80 @@ class AppStore(private val context: Context) {
     }
   }
 
+  private fun migrateDefaultTargetsIfNeeded() {
+    val savedVersion = preferences.getInt(KEY_DEFAULT_TARGETS_VERSION, 0)
+    if (savedVersion >= DEFAULT_TARGETS_VERSION) {
+      return
+    }
+
+    val defaults = DefaultTargets.create()
+    var targets = getTargets().toList()
+
+    if (savedVersion < DEFAULT_TARGETS_ADDED_VERSION) {
+      val existingIds = targets.mapTo(hashSetOf()) { it.id }
+      val missingTargets = defaults
+        .filterNot { it.id in existingIds }
+        .mapIndexed { index, target ->
+          target.copy(
+            hidden = true,
+            sortOrder = targets.size + index
+          )
+        }
+      targets += missingTargets
+    }
+
+    if (savedVersion < DEFAULT_TARGETS_ORDER_VERSION) {
+      targets = reorderDefaultTargets(targets, defaults).map { target ->
+        if (target.id == DEFAULT_VISIBLE_XIANYU_ID) target.copy(hidden = false) else target
+      }
+    }
+
+    if (savedVersion < DEFAULT_TARGETS_BUILTIN_ICONS_VERSION) {
+      targets = updateNewBuiltinIcons(targets, defaults)
+      targets = reorderDefaultTargets(targets, defaults)
+    }
+
+    saveTargets(targets)
+    preferences.edit().putInt(KEY_DEFAULT_TARGETS_VERSION, DEFAULT_TARGETS_VERSION).apply()
+  }
+
+  private fun reorderDefaultTargets(
+    targets: List<SearchTarget>,
+    defaults: List<SearchTarget>
+  ): List<SearchTarget> {
+    val defaultIds = defaults.mapTo(hashSetOf()) { it.id }
+    val targetsById = targets
+      .filter { it.id in defaultIds }
+      .associateBy { it.id }
+    val orderedDefaults = defaults.mapNotNull { targetsById[it.id] }.iterator()
+
+    return targets.map { target ->
+      if (target.id in defaultIds) orderedDefaults.next() else target
+    }
+  }
+
+  private fun updateNewBuiltinIcons(
+    targets: List<SearchTarget>,
+    defaults: List<SearchTarget>
+  ): List<SearchTarget> {
+    val defaultsById = defaults.associateBy { it.id }
+    return targets.map { target ->
+      val defaultTarget = defaultsById[target.id] ?: return@map target
+      val usesPreviousDefaultIcon = target.id in NEW_BUILTIN_ICON_TARGET_IDS &&
+        target.iconMode == IconModes.INSTALLED_APP &&
+        target.iconValue == defaultTarget.androidPackageName
+
+      if (usesPreviousDefaultIcon) {
+        target.copy(
+          iconMode = defaultTarget.iconMode,
+          iconValue = defaultTarget.iconValue
+        )
+      } else {
+        target
+      }
+    }
+  }
+
   private fun deleteOwnedIcon(path: String) {
     val iconRoot = File(context.filesDir, "icons").canonicalFile
     val targetFile = runCatching { File(path).canonicalFile }.getOrNull() ?: return
@@ -220,6 +295,13 @@ class AppStore(private val context: Context) {
     private const val KEY_SHOW_TARGET_LABELS = "show_target_labels"
     private const val KEY_HOME_COLUMN_COUNT = "home_column_count"
     private const val KEY_AUTO_DEFROST = "auto_defrost"
+    private const val KEY_DEFAULT_TARGETS_VERSION = "default_targets_version"
+    private const val DEFAULT_TARGETS_ADDED_VERSION = 1
+    private const val DEFAULT_TARGETS_ORDER_VERSION = 2
+    private const val DEFAULT_TARGETS_BUILTIN_ICONS_VERSION = 3
+    private const val DEFAULT_TARGETS_VERSION = DEFAULT_TARGETS_BUILTIN_ICONS_VERSION
+    private const val DEFAULT_VISIBLE_XIANYU_ID = "xianyu"
+    private val NEW_BUILTIN_ICON_TARGET_IDS = setOf("amap", "zhihu", "netease_music")
     private const val MAX_HISTORY_ITEMS = 500
   }
 }
